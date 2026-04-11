@@ -1,0 +1,395 @@
+\documentclass[supercite]{Hust-undergraduate-kaiti}
+
+\title{基于深度学习的乳腺癌超声图像自动诊断系统设计与实现}
+\school{计算机科学与技术学院}
+\author{XXX}  % 请填写你的姓名
+\classnum{XXXX}  % 请填写你的班级
+\stunum{U2021XXXXXX}  % 请填写你的学号
+\instructor{XXX}  % 请填写指导教师姓名
+\usepackage{zhnumber}
+\usepackage{tikz}
+\usetikzlibrary{mindmap,trees}
+\usepackage{algorithm, multirow}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{framed}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{tabu}
+\usepackage{xltxtra}
+\usepackage{bm}
+\usepackage{longtable}
+\usepackage{tikz}
+\usepackage{pdfpages}
+\usepackage{tikzscale}
+\usepackage{pgfplots}
+\usepackage{graphicx}
+\pgfplotsset{compat=1.16}
+
+\newcommand{\cfig}[3]{
+  \begin{figure}[htb]
+    \centering
+    \includegraphics[width=#2\textwidth]{images/#1.tikz}
+    \caption{#3}
+    \label{fig:#1}
+  \end{figure}
+}
+
+\newcommand{\sfig}[3]{
+  \begin{subfigure}[b]{#2\textwidth}
+    \includegraphics[width=\textwidth]{images/#1.tikz}
+    \caption{#3}
+    \label{fig:#1}
+  \end{subfigure}
+}
+
+\newcommand{\xfig}[3]{
+  \begin{figure}[htb]
+    \centering
+    #3
+    \caption{#2}
+    \label{fig:#1}
+  \end{figure}
+}
+
+\newcommand{\rfig}[1]{\autoref{fig:#1}}
+\newcommand{\ralg}[1]{\autoref{alg:#1}}
+\newcommand{\rthm}[1]{\autoref{thm:#1}}
+\newcommand{\rlem}[1]{\autoref{lem:#1}}
+\newcommand{\reqn}[1]{\autoref{eqn:#1}}
+\newcommand{\rtbl}[1]{\autoref{tbl:#1}}
+
+\algnewcommand\Null{\textsc{null }}
+\algnewcommand\algorithmicinput{\textbf{Input:}}
+\algnewcommand\Input{\item[\algorithmicinput]}
+\algnewcommand\algorithmicoutput{\textbf{Output:}}
+\algnewcommand\Output{\item[\algorithmicoutput]}
+\algnewcommand\algorithmicbreak{\textbf{break}}
+\algnewcommand\Break{\algorithmicbreak}
+\algnewcommand\algorithmiccontinue{\textbf{continue}}
+\algnewcommand\Continue{\algorithmiccontinue}
+\algnewcommand{\LeftCom}[1]{\State \$\triangleright\$ #1}
+
+\newtheorem{thm}{定理}[section]
+\newtheorem{lem}{引理}[section]
+\renewcommand {\thefigure} {\arabic{figure}}
+\colorlet{shadecolor}{black!15}
+
+\theoremstyle{definition}
+\newtheorem{alg}{算法}[section]
+\def\thmautorefname~#1\null{定理~#1~\null}
+\def\lemautorefname~#1\null{引理~#1~\null}
+\def\algautorefname~#1\null{算法~#1~\null}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[skins]{tcolorbox}
+\tcbuselibrary{breakable}
+\newtcolorbox{abox}[1][]{enhanced,
+	fonttitle = \heiti \large \bfseries,
+	colbacktitle =black,
+	coltitle=white,
+	attach boxed title to top left = {yshift = -5pt},
+	fontupper = \kaishu,
+	arc = 4pt,
+	colframe=black,
+	toprule  = 1pt,
+	rightrule = 1pt,
+	top = 10pt,
+	title=#1,
+	breakable
+}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+
+\begin{document}
+
+\maketitle
+\clearpage
+
+\pagenumbering{Roman}
+\pagenumbering{arabic}
+
+%% ==================== 第一章 ====================
+\section{课题来源、目的及意义}
+
+\subsection{课题来源}
+
+本课题来源于医学影像智能分析领域的实际需求。乳腺癌是全球女性最常见的恶性肿瘤之一，根据世界卫生组织（WHO）2024年发布的数据，全球每年新增乳腺癌病例约230万例，已超过肺癌成为全球第一大癌症。在中国，乳腺癌发病率同样呈上升趋势，每年新发病例约42万例。
+
+超声检查作为乳腺癌筛查的重要手段，具有无创、无辐射、实时成像、成本低廉等优点，特别适合亚洲女性致密型乳腺的检查。然而，传统的超声图像判读高度依赖放射科医生的经验，存在主观性强、一致性差、效率低等问题。随着深度学习技术的快速发展，计算机辅助诊断（Computer-Aided Diagnosis, CAD）系统为解决这些问题提供了新的可能。
+
+\subsection{课题目的}
+
+本课题旨在设计并实现一个基于深度学习的乳腺癌超声图像自动诊断系统，主要实现以下目标：
+
+\begin{enumerate}
+    \item \textbf{图像分类}：利用卷积神经网络（CNN）对超声图像进行良性、恶性、正常三分类，分类准确率达到85\%以上；
+    \item \textbf{病灶分割}：采用U-Net网络对超声图像中的肿瘤区域进行精确分割，Dice系数达到0.75以上；
+    \item \textbf{可解释性分析}：通过Grad-CAM技术生成热力图，直观展示模型的决策依据，增强系统的可信度。
+\end{enumerate}
+
+\subsection{课题意义}
+
+\subsubsection{理论意义}
+
+\begin{enumerate}
+    \item 探索深度学习在医学影像分析中的应用方法，为相关研究提供参考；
+    \item 研究图像分类与语义分割的联合建模方法，推动多任务学习的发展；
+    \item 探索深度学习模型的可解释性技术，促进可信AI在医疗领域的应用。
+\end{enumerate}
+
+\subsubsection{实践意义}
+
+\begin{enumerate}
+    \item 辅助放射科医生进行乳腺超声图像判读，提高诊断效率和一致性；
+    \item 为基层医疗机构提供智能诊断工具，缓解医疗资源分布不均的问题；
+    \item 通过可视化解释增强医生对AI诊断结果的信任，促进人机协作。
+\end{enumerate}
+
+%% ==================== 第二章 ====================
+\section{国内外研究现况及发展趋势}
+
+\subsection{深度学习在医学影像中的应用}
+
+深度学习，特别是卷积神经网络（CNN），在医学影像分析领域取得了突破性进展。2012年，AlexNet\cite{ref1}在ImageNet竞赛中的成功标志着深度学习时代的到来。此后，VGGNet、GoogLeNet、ResNet\cite{ref2}等网络结构相继提出，不断刷新图像识别的性能记录。
+
+在医学影像领域，深度学习已广泛应用于X光片、CT、MRI、超声等多种模态的图像分析。2016年，Google团队利用深度学习进行糖尿病视网膜病变筛查，达到了专家级的诊断水平。2017年，斯坦福大学团队开发的皮肤癌诊断系统在某些情况下超过了皮肤科医生的诊断准确率。
+
+\subsection{乳腺超声图像分析研究现状}
+
+\subsubsection{图像分类方向}
+
+早期的乳腺超声图像分类主要依赖手工设计的特征，如纹理特征、形态特征等，结合传统机器学习分类器（如SVM、随机森林）进行分类。近年来，基于深度学习的端到端分类方法成为主流：
+
+\begin{enumerate}
+    \item \textbf{迁移学习方法}：由于医学图像数据集规模较小，研究者普遍采用在ImageNet上预训练的模型（如ResNet、VGG、DenseNet）进行迁移学习，取得了较好的效果；
+    \item \textbf{轻量级网络}：考虑到临床部署的需求，MobileNet、EfficientNet等轻量级网络也被应用于乳腺超声分类；
+    \item \textbf{Transformer架构}：近两年，Vision Transformer（ViT）\cite{ref3}及其变体开始应用于医学影像分析，展现出对CNN的竞争力。
+\end{enumerate}
+
+\subsubsection{图像分割方向}
+
+医学图像分割旨在从图像中精确定位病灶区域。U-Net\cite{ref4}是医学图像分割领域最具影响力的网络结构，其编码器-解码器架构和跳跃连接设计特别适合小数据集场景。后续的改进工作包括：
+
+\begin{enumerate}
+    \item \textbf{Attention U-Net}：引入注意力机制，自适应聚焦于目标区域；
+    \item \textbf{U-Net++}：通过嵌套的跳跃连接增强特征融合；
+    \item \textbf{TransUNet}：将Transformer与U-Net结合，捕获长距离依赖关系。
+\end{enumerate}
+
+\subsection{可解释性研究进展}
+
+深度学习模型通常被视为"黑箱"，这在医疗等高风险领域限制了其应用。可解释性研究旨在揭示模型的决策依据：
+
+\begin{enumerate}
+    \item \textbf{CAM系列方法}：Class Activation Mapping（CAM）及其改进版本Grad-CAM\cite{ref5}通过可视化特征图展示模型关注的区域；
+    \item \textbf{SHAP/LIME}：基于博弈论或局部近似的解释方法；
+    \item \textbf{概念瓶颈模型}：通过引入人类可理解的概念提供解释。
+\end{enumerate}
+
+\subsection{发展趋势}
+
+\begin{enumerate}
+    \item \textbf{多任务联合学习}：将分类、分割、检测等任务联合建模，共享特征表示；
+    \item \textbf{自监督与半监督学习}：利用大量无标注数据提升模型性能；
+    \item \textbf{可信AI}：将可解释性、公平性、鲁棒性等作为系统设计的核心考量；
+    \item \textbf{边缘部署}：开发适合移动设备和边缘计算的轻量级模型。
+\end{enumerate}
+
+%% ==================== 第三章 ====================
+\section{研究内容与技术方案}
+
+\subsection{课题研究内容}
+
+本课题的研究内容主要包括以下三个方面：
+
+\begin{enumerate}
+    \item \textbf{乳腺超声图像分类模块}：
+    \begin{itemize}
+        \item 基于ResNet18构建图像分类网络
+        \item 实现良性（Benign）、恶性（Malignant）、正常（Normal）三分类
+        \item 采用迁移学习策略，使用ImageNet预训练权重
+        \item 目标：分类准确率$\geq$85\%，AUC$\geq$0.90
+    \end{itemize}
+    
+    \item \textbf{病灶区域分割模块}：
+    \begin{itemize}
+        \item 基于U-Net构建语义分割网络
+        \item 实现肿瘤区域的像素级分割
+        \item 采用Dice Loss作为损失函数
+        \item 目标：Dice系数$\geq$0.75，IoU$\geq$0.65
+    \end{itemize}
+    
+    \item \textbf{可解释性可视化模块}：
+    \begin{itemize}
+        \item 基于Grad-CAM生成类激活热力图
+        \item 直观展示模型的决策依据
+        \item 支持医生理解和验证AI诊断结果
+    \end{itemize}
+\end{enumerate}
+
+\subsection{课题预期目标}
+
+\begin{table}[htb]
+\centering
+\caption{系统性能指标}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{模块} & \textbf{指标} & \textbf{目标值} \\ \hline
+\multirow{3}{*}{分类模块} & 准确率(Accuracy) & $\geq$85\% \\ \cline{2-3}
+ & AUC值 & $\geq$0.90 \\ \cline{2-3}
+ & F1-Score & $\geq$0.82 \\ \hline
+\multirow{2}{*}{分割模块} & Dice系数 & $\geq$0.75 \\ \cline{2-3}
+ & IoU & $\geq$0.65 \\ \hline
+可解释性模块 & 热力图生成 & 正确高亮病灶区域 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{技术路线与方案}
+
+\subsubsection{数据集}
+
+本课题采用BUSI（Breast Ultrasound Images）数据集\cite{ref6}，该数据集由埃及Al-Azhar大学发布，包含780张乳腺超声图像，分为三类：
+\begin{itemize}
+    \item 良性（Benign）：437张
+    \item 恶性（Malignant）：210张
+    \item 正常（Normal）：133张
+\end{itemize}
+
+数据集同时提供了专家标注的肿瘤区域分割掩码，可用于分割任务的训练和评估。
+
+\subsubsection{关键技术}
+
+\textbf{（1）ResNet18分类网络}
+
+ResNet（残差网络）通过引入跳跃连接（Skip Connection）解决了深层网络的梯度消失问题。ResNet18是一个18层的轻量级版本，适合中小规模数据集。其核心是残差块结构：
+$$y = F(x, \{W_i\}) + x$$
+其中$F(x, \{W_i\})$表示需要学习的残差映射。
+
+\textbf{（2）U-Net分割网络}
+
+U-Net采用对称的编码器-解码器结构，通过跳跃连接将浅层特征与深层特征融合，特别适合医学图像分割：
+\begin{itemize}
+    \item 编码器：逐层下采样，提取多尺度特征
+    \item 解码器：逐层上采样，恢复空间分辨率
+    \item 跳跃连接：融合高分辨率的位置信息
+\end{itemize}
+
+损失函数采用Dice Loss：
+$$L_{Dice} = 1 - \frac{2|P \cap G|}{|P| + |G|}$$
+其中$P$是预测结果，$G$是真实标签。
+
+\textbf{（3）Grad-CAM可解释性}
+
+Grad-CAM通过计算目标类别相对于最后一个卷积层特征图的梯度，生成加权激活热力图：
+$$L_{Grad-CAM}^c = ReLU\left(\sum_k \alpha_k^c A^k\right)$$
+其中$\alpha_k^c = \frac{1}{Z}\sum_i\sum_j \frac{\partial y^c}{\partial A_{ij}^k}$是权重系数。
+
+\subsubsection{总体方案}
+
+系统的总体技术架构如下：
+
+\begin{enumerate}
+    \item \textbf{数据预处理}：图像统一缩放至$224\times224$，数据增强（翻转、旋转、亮度调整）
+    \item \textbf{分类流程}：输入图像$\rightarrow$ResNet18特征提取$\rightarrow$全连接层$\rightarrow$Softmax$\rightarrow$三分类结果
+    \item \textbf{分割流程}：输入图像$\rightarrow$U-Net编码器$\rightarrow$U-Net解码器$\rightarrow$Sigmoid$\rightarrow$分割掩码
+    \item \textbf{可解释性流程}：分类结果$\rightarrow$Grad-CAM$\rightarrow$热力图叠加$\rightarrow$可视化输出
+\end{enumerate}
+
+\subsubsection{开发环境}
+
+\begin{itemize}
+    \item 硬件：MacBook Pro (Apple M系列芯片)
+    \item 操作系统：macOS
+    \item 编程语言：Python 3.10
+    \item 深度学习框架：PyTorch 2.0+ (MPS加速)
+    \item 主要依赖库：torchvision, opencv-python, scikit-learn, matplotlib
+\end{itemize}
+
+%% ==================== 第四章 ====================
+\section{可行性与风险分析}
+
+\subsection{技术可行性}
+
+\begin{enumerate}
+    \item \textbf{成熟的技术栈}：ResNet、U-Net、Grad-CAM均为经过大量验证的成熟技术，有丰富的开源实现；
+    \item \textbf{硬件支持}：Apple M系列芯片通过PyTorch的MPS后端可实现GPU加速，满足训练需求；
+    \item \textbf{数据可用}：BUSI数据集公开可用，包含完整的分类标签和分割标注。
+\end{enumerate}
+
+\subsection{数据可行性}
+
+\begin{enumerate}
+    \item BUSI数据集共780张图像，数据量适中，适合迁移学习；
+    \item 三类样本分布相对均衡，不存在严重的类别不平衡问题；
+    \item 数据集提供专业的医学标注，质量有保障。
+\end{enumerate}
+
+\subsection{制约因素与风险}
+
+\begin{table}[htb]
+\centering
+\caption{风险分析与应对措施}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{风险类型} & \textbf{风险描述} & \textbf{应对措施} \\ \hline
+数据风险 & 数据集规模较小 & 采用数据增强和迁移学习 \\ \hline
+技术风险 & 模型性能不达标 & 调整超参数、更换网络结构 \\ \hline
+硬件风险 & M芯片兼容性问题 & 使用官方支持的PyTorch版本 \\ \hline
+时间风险 & 实习期间时间有限 & 合理规划、使用预训练模型 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{成本估算与可行性}
+
+本项目采用开源工具和公开数据集，主要成本为时间成本：
+\begin{itemize}
+    \item 开题报告阶段：2周
+    \item 代码开发阶段：3周
+    \item 实验与调优阶段：2周
+    \item 论文撰写阶段：4周
+    \item 总计约11周，时间可控
+\end{itemize}
+
+综合以上分析，本课题在技术、数据、时间等方面均具备可行性。
+
+%% ==================== 第五章 ====================
+\section{课题研究进度安排}
+
+\begin{table}[htb]
+\centering
+\caption{研究进度安排}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{阶段} & \textbf{时间} & \textbf{主要工作} \\ \hline
+开题阶段 & 2026年1月-2月 & 文献调研、开题报告、开题答辩 \\ \hline
+开发阶段 & 2026年3月 & 环境搭建、数据预处理、模型实现 \\ \hline
+实验阶段 & 2026年4月 & 模型训练、参数调优、性能评估 \\ \hline
+论文阶段 & 2026年4月-5月 & 论文撰写、中期检查 \\ \hline
+完善阶段 & 2026年5月-6月 & 论文修改、答辩准备、最终答辩 \\ \hline
+\end{tabular}
+\end{table}
+
+%% ==================== 参考文献 ====================
+\begin{thebibliography}{99}
+
+\bibitem{ref1} Krizhevsky A, Sutskever I, Hinton G E. ImageNet classification with deep convolutional neural networks[J]. Advances in Neural Information Processing Systems, 2012, 25: 1097-1105.
+
+\bibitem{ref2} He K, Zhang X, Ren S, et al. Deep residual learning for image recognition[C]. Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, 2016: 770-778.
+
+\bibitem{ref3} Dosovitskiy A, Beyer L, Kolesnikov A, et al. An image is worth 16x16 words: Transformers for image recognition at scale[C]. International Conference on Learning Representations, 2021.
+
+\bibitem{ref4} Ronneberger O, Fischer P, Brox T. U-Net: Convolutional networks for biomedical image segmentation[C]. International Conference on Medical Image Computing and Computer-Assisted Intervention, 2015: 234-241.
+
+\bibitem{ref5} Selvaraju R R, Cogswell M, Das A, et al. Grad-CAM: Visual explanations from deep networks via gradient-based localization[C]. Proceedings of the IEEE International Conference on Computer Vision, 2017: 618-626.
+
+\bibitem{ref6} Al-Dhabyani W, Gomaa M, Khaled H, et al. Dataset of breast ultrasound images[J]. Data in Brief, 2020, 28: 104863.
+
+\bibitem{ref7} Huang G, Liu Z, Van Der Maaten L, et al. Densely connected convolutional networks[C]. Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, 2017: 4700-4708.
+
+\bibitem{ref8} Vaswani A, Shazeer N, Parmar N, et al. Attention is all you need[J]. Advances in Neural Information Processing Systems, 2017, 30.
+
+\end{thebibliography}
+
+\end{document}
