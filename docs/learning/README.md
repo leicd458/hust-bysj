@@ -1,164 +1,102 @@
-# 学习资料收集
+# 学习资料
 
-本分支用于收集项目相关的学习资料，帮助建立理论基础和技术储备。
-
----
-
-## 📚 核心学习资料
-
-### 1. 深度学习基础
-
-#### 李宏毅机器学习教程
-- **来源**：台湾大学李宏毅教授
-- **内容**：深度学习基础理论、CNN、RNN、Transformer等
-- **资源**：
-  - [课程视频](https://www.youtube.com/c/HungyiLeeNTU)
-  - 课程讲义PDF
-  - Jupyter Notebook 实践代码
-
-#### 相关主题
-- [ ] 卷积神经网络（CNN）原理
-- [ ] 图像分类任务基础
-- [ ] 数据增强技术
-- [ ] 模型评估指标
+本分支收集了项目相关的学习资料，包括深度学习基础和 Transformer 教程。
 
 ---
 
-### 2. NLP与Transformer
+## 📚 已收集资料
 
-#### Learn NLP with Transformers
+### 1. 李宏毅深度学习教程
+
+#### 教程讲义
+- **文件**：`LeeDL_Tutorial_v.1.2.4.pdf`
+- **大小**：135 MB
+- **内容**：深度学习基础理论、CNN、RNN、Transformer 等
+- **作者**：台湾大学李宏毅教授
+
+#### 课程作业与实践代码
+- **目录**：`leedl-tutorial/`
+- **内容**：15个课程作业 + PyTorch 入门教程
+
+| 作业编号 | 主题 | 涉及技术 |
+|---------|------|---------|
+| HW1 | PM2.5 预测 | 线性回归 |
+| HW2 | 音素分类 | 深度神经网络 |
+| HW3 | 图像情感分类 | CNN |
+| HW4 | 自注意力机制 | Self-Attention |
+| HW5 | 序列到序列 | seq2seq |
+| HW6 | 生成对抗网络 | GAN |
+| HW7 | BERT 微调 | Transformer |
+| HW8 | 异常检测 | Autoencoder |
+| HW9 | 可解释性 AI | Explainable AI |
+| HW10 | 对抗攻击 | Adversarial Attack |
+| HW11 | 域适应 | Domain Adaptation |
+| HW12 | 强化学习 | Reinforcement Learning |
+| HW13 | 网络压缩 | Network Compression |
+| HW14 | 终身学习 | Life-Long Learning |
+| HW15 | 元学习 | Meta Learning |
+| Warmup | PyTorch 入门 | PyTorch 基础 |
+
+**课程资源**：
+- [课程视频](https://www.youtube.com/c/HungyiLeeNTU)
+- 课程讲义位于 `leedl-tutorial/docs/`
+
+---
+
+### 2. Learn NLP with Transformers
+
+#### 教程内容
+- **目录**：`learn-nlp-with-transformers/`
 - **来源**：Hugging Face 开源教程
-- **内容**：Transformer架构、预训练模型、微调技术
-- **重点章节**：
-  - [ ] Transformer 架构详解
-  - [ ] Vision Transformer (ViT)
-  - [ ] 注意力机制原理
+- **内容**：Transformer 架构、预训练模型、微调技术
 
-#### 在本项目中的应用
-- Vision Transformer 在医学图像分类中的应用
-- Attention U-Net 分割网络
-- TransUNet 混合架构
+#### 章节结构
 
----
+**章节 1 - 前言**
+- 本地阅读和代码运行环境配置
+- Transformers 在 NLP 中的兴起
 
-### 3. 医学图像分析
+**章节 2 - Transformer 相关原理**
+- 图解 Attention 注意力机制
+- 图解 Transformer 架构
+- PyTorch 编写 Transformer（含 Jupyter Notebook）
 
-#### 乳腺癌超声诊断
-- [ ] BUSI 数据集介绍论文
-- [ ] 医学图像预处理方法
-- [ ] 类别不平衡处理策略
-- [ ] 医学伦理与数据脱敏
+**章节 3 - BERT 相关原理**
+- BERT 模型介绍
+- BERT 应用实践
 
-#### 可解释性方法
-- [ ] Grad-CAM 原理与实现
-- [ ] 医学AI诊断的可解释性需求
-- [ ] 热力图可视化技术
+**相关资源**：
+- [Hugging Face 官方教程](https://huggingface.co/learn)
+- 依赖包：`requirements.txt`
 
 ---
 
-### 4. 数据增强技术
-
-#### 传统数据增强
-- 几何变换：旋转、翻转、缩放
-- 弹性变形
-- 颜色增强
-
-#### 生成式数据增强
-- **DAGAN (Data Augmentation GAN)**
-  - 论文阅读：DAGAN原理
-  - 代码实现参考
-  - 在医学图像中的应用案例
-
----
-
-### 5. 实践框架与工具
-
-#### PyTorch 生态
-- [ ] PyTorch 基础语法
-- [ ] torchvision 数据增强
-- [ ] 模型训练与验证流程
-- [ ] Checkpoint 管理
-
-#### 可视化工具
-- [ ] Matplotlib 绘图
-- [ ] TensorBoard 可视化
-- [ ] Grad-CAM 实现
-
----
-
-## 📂 资料组织结构
+## 📂 目录结构
 
 ```
 docs/learning/
-├── learn-nlp-with-transformers/    # NLP Transformers 教程
-│   ├── chapters/                   # 各章节内容
-│   └── notebooks/                  # Jupyter notebooks
-├── leedl-tutorial/                 # 李宏毅深度学习教程
-│   ├── slides/                     # 课程讲义
-│   └── notebooks/                  # 实践代码
-└── medical-imaging/                # 医学图像相关资料
-    ├── papers/                     # 相关论文
-    └── tutorials/                  # 教程文档
+├── README.md                           # 本文档
+├── LeeDL_Tutorial_v.1.2.4.pdf         # 李宏毅教程 PDF (135MB)
+├── learn-nlp-with-transformers/        # NLP Transformers 教程
+│   ├── docs/                           # 教程文档
+│   └── requirements.txt                # Python 依赖
+└── leedl-tutorial/                     # 李宏毅课程作业
+    ├── docs/                           # 课程讲义
+    ├── Homework/                       # 15个作业 + Warmup
+    └── assets/                         # 课程资源图片
 ```
 
 ---
 
-## ✅ 收集进度
+## 📊 统计信息
 
-### 已收集资料
-- [x] 李宏毅深度学习教程PDF
-- [x] Learn NLP with Transformers 完整教程
-- [ ] 待补充...
-
-### 待收集资料
-- [ ] DAGAN 论文精读笔记
-- [ ] BUSI 数据集分析文档
-- [ ] Grad-CAM 实现教程
-- [ ] 医学图像分类综述
+- **总文件数**：218 个文件
+- **总代码行数**：393,754 行
+- **主要资源**：
+  - 1 个 PDF 教程（135MB）
+  - 137 个 Transformers 教程文件
+  - 74 个李宏毅课程文件
 
 ---
 
-## 🎯 学习目标
-
-### 短期目标（开题阶段）
-1. 掌握深度学习基础理论
-2. 理解 CNN 和 Transformer 架构
-3. 了解医学图像分析特点
-
-### 中期目标（实现阶段）
-1. 精通 PyTorch 框架
-2. 掌握数据增强技术
-3. 实现可解释性方法
-
----
-
-## 📝 学习笔记
-
-### 学习方法
-1. **主动学习**：边看边敲代码
-2. **总结提炼**：每学完一章写笔记
-3. **实践验证**：在小数据集上验证理解
-
-### 笔记规范
-- 使用 Markdown 格式
-- 包含代码示例
-- 标注重点和疑问
-- 定期复习和更新
-
----
-
-## 📖 参考链接
-
-### 在线课程
-- [李宏毅机器学习课程](https://www.youtube.com/c/HungyiLeeNTU)
-- [Hugging Face Transformers 教程](https://huggingface.co/learn)
-
-### 开源项目
-- [PyTorch 官方教程](https://pytorch.org/tutorials/)
-- [Albumentations 数据增强库](https://albumentations.ai/)
-
-### 论文资源
-- [arXiv.org](https://arxiv.org/)
-- [Papers With Code](https://paperswithcode.com/)
-
----
+*资料收集时间：2026年4月11日*
