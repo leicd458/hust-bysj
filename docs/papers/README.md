@@ -20,7 +20,7 @@
 - 提供完整的 Ground Truth 标注（mask 图像）
 - 成为乳腺超声分类研究的标准数据集
 
-**中文版**：`Al-Dhabyani_2020_Dataset_of_Breast_Ultrasound_Images zh-Hans.pdf` (1.2 MB)
+
 
 ---
 
@@ -69,7 +69,7 @@
 - 对比 ResNet-18、ResNet-50、EfficientNet-B0/B7、VGG-16、DenseNet-121
 - 提供可解释性分析（与 Grad-CAM 方法呼应）
 
-**中文译本**：`可解释深度迁移学习用于乳腺超声癌症检测_中文译本.pdf` (1.6 MB)
+
 
 ---
 
@@ -89,31 +89,19 @@
 
 ---
 
-## 📊 数据集分析
-
-**Dataset B 分析**
-
-- **文件**：`Dataset_B_分析.md` (6.3 KB)
-- **内容**：对 BUSI 数据集的详细分析笔记
-
----
-
 ## 📁 文件列表
 
 ```
 docs/papers/
-├── README.md                                                        # 本文档
-├── Al-Dhabyani_2019.pdf                                            # 数据增强论文 (994 KB)
-├── Al-Dhabyani_2020_Dataset_of_Breast_Ultrasound_Images.pdf       # 数据集论文 (756 KB)
-├── Al-Dhabyani_2020_Dataset_of_Breast_Ultrasound_Images zh-Hans.pdf  # 中文版 (1.2 MB)
-├── EfficientNet_B7_BUSI_2024.pdf                                   # EfficientNet论文 (5.0 MB)
-├── Jabeen_2024_EfficientNet_ResNet.pdf                            # 融合网络论文 (3.0 MB)
-├── arXiv_2025_Interpretable_Deep_Transfer_Learning.pdf           # ResNet-18论文 (359 KB)
-├── 可解释深度迁移学习用于乳腺超声癌症检测_中文译本.pdf            # 中文译本 (1.6 MB)
-└── Dataset_B_分析.md                                               # 数据集分析笔记 (6.3 KB)
+├── README.md                                              # 本文档
+├── Al-Dhabyani_2019.pdf                                  # 数据增强论文 (994 KB)
+├── Al-Dhabyani_2020_Dataset_of_Breast_Ultrasound_Images.pdf  # 数据集论文 (756 KB)
+├── EfficientNet_B7_BUSI_2024.pdf                         # EfficientNet论文 (5.0 MB)
+├── Jabeen_2024_EfficientNet_ResNet.pdf                  # 融合网络论文 (3.0 MB)
+└── arXiv_2025_Interpretable_Deep_Transfer_Learning.pdf # ResNet-18论文 (359 KB)
 ```
 
-**总计**：7 篇 PDF 论文 + 1 篇分析文档，约 10 MB
+**总计**：5 篇 PDF 论文，约 10 MB
 
 ---
 
