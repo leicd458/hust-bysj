@@ -11,17 +11,28 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import seaborn as sns
 from typing import Dict, List, Optional
 from pathlib import Path
 
 
+def get_chinese_font():
+    """获取中文字体"""
+    font_names = ['PingFang HK', 'Arial Unicode MS', 'STHeiti']
+    for font_name in font_names:
+        try:
+            font_path = fm.findfont(font_name)
+            if 'PingFang' in font_path or 'Arial Unicode' in font_path or 'STHeiti' in font_path:
+                return fm.FontProperties(fname=font_path)
+        except:
+            continue
+    # 如果找不到，返回None，使用默认字体
+    return None
+
+
 class VisualizationManager:
     """可视化工具管理器"""
-    
-    # 设置中文字体
-    plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
-    plt.rcParams['axes.unicode_minus'] = False
     
     # 配色方案
     COLORS = {
@@ -36,6 +47,11 @@ class VisualizationManager:
             style: seaborn样式 ('whitegrid', 'darkgrid', 'white', 'dark', 'ticks')
         """
         sns.set_style(style)
+        
+        # 在 seaborn 设置之后重新配置字体（避免被覆盖）
+        plt.rcParams['font.sans-serif'] = ['PingFang HK', 'Arial Unicode MS', 'STHeiti', 'DejaVu Sans']
+        plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+        
         self.figsize = (10, 8)
         self.dpi = 300
     
@@ -82,9 +98,15 @@ class VisualizationManager:
             ax=ax
         )
         
-        ax.set_title(title, fontsize=16, fontweight='bold', pad=20)
-        ax.set_xlabel('预测类别', fontsize=14)
-        ax.set_ylabel('真实类别', fontsize=14)
+        # 获取中文字体
+        chinese_font = get_chinese_font()
+        
+        ax.set_title(title, fontsize=16, fontweight='bold', pad=20, 
+                    fontproperties=chinese_font if chinese_font else None)
+        ax.set_xlabel('预测类别', fontsize=14, 
+                     fontproperties=chinese_font if chinese_font else None)
+        ax.set_ylabel('真实类别', fontsize=14,
+                     fontproperties=chinese_font if chinese_font else None)
         
         # 在右侧添加准确率标注
         if show_accuracy and not normalize:
@@ -156,7 +178,8 @@ class VisualizationManager:
         
         ax.set_xlabel('False Positive Rate (1 - Specificity)', fontsize=14)
         ax.set_ylabel('True Positive Rate (Sensitivity)', fontsize=14)
-        ax.set_title(title, fontsize=16, fontweight='bold', pad=20)
+        ax.set_title(title, fontsize=16, fontweight='bold', pad=20,
+                    fontproperties=get_chinese_font() if get_chinese_font() else None)
         ax.legend(loc='lower right', fontsize=12)
         ax.grid(True, alpha=0.3)
         ax.set_xlim([-0.02, 1.02])
@@ -246,7 +269,8 @@ class VisualizationManager:
         
         ax.set_xlabel('Class', fontsize=14)
         ax.set_ylabel('Score (%)', fontsize=14)
-        ax.set_title(title, fontsize=16, fontweight='bold', pad=20)
+        ax.set_title(title, fontsize=16, fontweight='bold', pad=20,
+                    fontproperties=get_chinese_font() if get_chinese_font() else None)
         ax.set_xticks(x)
         ax.set_xticklabels(class_names, fontsize=12)
         ax.legend(fontsize=11)

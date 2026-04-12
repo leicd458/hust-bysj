@@ -19,6 +19,10 @@ import cv2
 from typing import Tuple, Optional, List
 from pathlib import Path
 
+# 设置中文字体（macOS系统）
+plt.rcParams['font.sans-serif'] = ['PingFang HK', 'Arial Unicode MS', 'STHeiti', 'DejaVu Sans']
+plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
 
 class GradCAM:
     """Grad-CAM实现
@@ -180,6 +184,9 @@ def visualize_gradcam_samples(
     # 创建Grad-CAM实例
     grad_cam = GradCAM(model, target_layer)
     
+    # 获取模型所在设备
+    device = next(model.parameters()).device
+    
     # 图像预处理
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -203,7 +210,7 @@ def visualize_gradcam_samples(
         # 加载图像
         image_path = image_paths[i]
         image = Image.open(image_path).convert('RGB')
-        input_tensor = transform(image).unsqueeze(0)
+        input_tensor = transform(image).unsqueeze(0).to(device)  # 移动到模型所在设备
         
         # 生成Grad-CAM
         original, cam_heatmap, overlay = grad_cam.visualize(
