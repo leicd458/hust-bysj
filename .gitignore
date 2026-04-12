@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
+# CodeBuddy配置目录
+.codebuddy/
+
 # Data (不提交到 Git)
 data/raw/
 data/processed/
