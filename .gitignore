@@ -1,2 +1,7 @@
 # macOS
 .DS_Store
+
+# Data (不提交到 Git)
+data/raw/
+data/processed/
+*.zip
