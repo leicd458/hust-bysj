@@ -4,7 +4,37 @@
 # CodeBuddy配置目录
 .codebuddy/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
 # Data (不提交到 Git)
 data/raw/
 data/processed/
 *.zip
+
+# 输出目录（测试和评估结果）
+outputs/
+test_outputs/
+results/
+logs/
+
+# 模型文件（可选，如果模型很大）
+# *.pth
+# *.pt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
