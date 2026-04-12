@@ -1,0 +1,17 @@
+# Outputs
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyTorch
+*.pth
+*.pt
+
+# Logs
+*.log
+
+# OS
+.DS_Store
