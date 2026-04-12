@@ -185,9 +185,9 @@ def train_dagan(
     gan_loss = GANLoss()
     reconstruction_loss = nn.L1Loss()
     
-    # 优化器（调整学习率比例，防止判别器过强）
-    g_optimizer = optim.Adam(generator.parameters(), lr=lr * 2, betas=(beta1, 0.999))
-    d_optimizer = optim.Adam(discriminator.parameters(), lr=lr * 0.5, betas=(beta1, 0.999))
+    # 优化器
+    g_optimizer = optim.Adam(generator.parameters(), lr=lr, betas=(beta1, 0.999))
+    d_optimizer = optim.Adam(discriminator.parameters(), lr=lr, betas=(beta1, 0.999))
     
     # 学习率调度器
     g_scheduler = optim.lr_scheduler.StepLR(g_optimizer, step_size=50, gamma=0.5)

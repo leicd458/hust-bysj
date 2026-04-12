@@ -29,7 +29,7 @@ from torchvision import models
 from torchvision.models import ResNet18_Weights
 from tqdm import tqdm
 
-from dataset import get_dataloaders
+from dataset import get_dataloaders  # type: ignore
 
 
 class ResNet18Classifier(nn.Module):
@@ -299,6 +299,7 @@ def main():
     best_val_acc = 0.0
     no_improve = 0
     start_time = time.time()
+    epoch = 0  # 初始化epoch变量，防止未绑定
     
     for epoch in range(1, args.epochs + 1):
         epoch_start = time.time()
@@ -394,8 +395,8 @@ def main():
             'target_acc': args.target_acc
         },
         'data_info': {
-            'train_original': len(train_loader.dataset.datasets[0]),
-            'synthetic': len(train_loader.dataset.datasets[1]),
+            'train_original': len(train_loader.dataset.datasets[0]) if hasattr(train_loader.dataset, 'datasets') else 0,  # type: ignore
+            'synthetic': len(train_loader.dataset.datasets[1]) if hasattr(train_loader.dataset, 'datasets') else 0,  # type: ignore
             'train_total': len(train_loader.dataset),
             'val': len(val_loader.dataset),
             'test': len(test_loader.dataset)
