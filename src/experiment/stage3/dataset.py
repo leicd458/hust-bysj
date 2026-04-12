@@ -205,7 +205,8 @@ def get_dataloaders(
     train_ratio: float = 0.7,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
-    seed: int = 42
+    seed: int = 42,
+    synthetic_ratio: float = 1.0
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """获取数据加载器
     
@@ -218,6 +219,7 @@ def get_dataloaders(
         val_ratio: 验证集比例
         test_ratio: 测试集比例
         seed: 随机种子
+        synthetic_ratio: 合成数据采样比例 (0.0-1.0, 默认1.0使用全部)
     
     Returns:
         train_loader, val_loader, test_loader
@@ -262,10 +264,20 @@ def get_dataloaders(
     
     # 加载合成数据集（带传统增强）
     print(f"\n加载合成数据集...")
-    synthetic_dataset = BUSIDataset(
+    synthetic_dataset_full = BUSIDataset(
         synthetic_data_dir,
         transform=get_transforms(is_train=True)
     )
+    
+    # 按比例采样合成数据
+    if synthetic_ratio < 1.0:
+        synthetic_size = int(len(synthetic_dataset_full) * synthetic_ratio)
+        torch.manual_seed(seed)
+        indices = torch.randperm(len(synthetic_dataset_full))[:synthetic_size].tolist()
+        synthetic_dataset = torch.utils.data.Subset(synthetic_dataset_full, indices)
+        print(f"  采样比例: {synthetic_ratio:.2f} ({synthetic_size}/{len(synthetic_dataset_full)} 张)")
+    else:
+        synthetic_dataset = synthetic_dataset_full
     
     # 合并训练集
     print(f"\n合并训练集:")

@@ -226,6 +226,8 @@ def main():
                        help='设备 (auto/cpu/cuda/mps)')
     parser.add_argument('--num_workers', type=int, default=0,
                        help='数据加载线程数')
+    parser.add_argument('--synthetic_ratio', type=float, default=1.0,
+                       help='合成数据采样比例 (0.0-1.0, 默认1.0使用全部)')
     
     args = parser.parse_args()
     
@@ -253,6 +255,7 @@ def main():
     print(f"学习率: {args.lr}")
     print(f"早停耐心: {args.patience}")
     print(f"目标准确率: {args.target_acc}%")
+    print(f"合成数据比例: {args.synthetic_ratio:.2f}")
     
     # 检查合成数据是否存在
     synthetic_dir = Path(args.synthetic_data_dir)
@@ -270,7 +273,8 @@ def main():
         real_data_dir=args.real_data_dir,
         synthetic_data_dir=args.synthetic_data_dir,
         batch_size=args.batch_size,
-        num_workers=args.num_workers
+        num_workers=args.num_workers,
+        synthetic_ratio=args.synthetic_ratio
     )
     
     # 创建模型
