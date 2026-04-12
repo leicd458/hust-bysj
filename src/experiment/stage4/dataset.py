@@ -161,32 +161,20 @@ class TransformSubset(Dataset):
 
 def get_transforms(is_train=True):
     """获取图像变换
-    
-    阶段4增强策略（继承阶段2成功配置）:
-    - 随机裁剪: 模拟平移和缩放
-    - 随机水平翻转: 50%概率
-    - 随机垂直翻转: 20%概率
-    - 随机旋转: ±5度
-    - 随机仿射变换: 轻微平移±5%、缩放±5%
-    - 高斯模糊: 模拟医学噪声
-    
+
+    阶段4增强策略（按照Al-Dhabyani 2019论文）:
+    - 水平翻转: 50%概率
+    - 垂直翻转: 50%概率
+
     Args:
         is_train: 是否为训练集
     """
     if is_train:
-        # 训练集：传统数据增强（mild augmentation）
+        # 训练集：仅水平/垂直翻转（论文配置）
         return transforms.Compose([
-            transforms.Resize((256, 256)),
-            transforms.RandomCrop(224),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomVerticalFlip(p=0.2),
-            transforms.RandomRotation(degrees=5),
-            transforms.RandomAffine(
-                degrees=0,
-                translate=(0.05, 0.05),
-                scale=(0.95, 1.05)
-            ),
-            transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),
+            transforms.RandomVerticalFlip(p=0.5),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],

@@ -35,7 +35,7 @@ from dataset import get_dataloaders  # type: ignore
 class ResNet18Classifier(nn.Module):
     """ResNet-18分类器"""
     
-    def __init__(self, num_classes=3, pretrained=True, dropout=0.5):
+    def __init__(self, num_classes=3, pretrained=True, dropout=0.30):
         super(ResNet18Classifier, self).__init__()
         
         # 加载预训练模型
@@ -230,8 +230,20 @@ def main():
                        help='合成数据采样比例 (0.0-1.0, 默认1.0使用全部)')
     parser.add_argument('--no_augment_synthetic', action='store_true',
                        help='不对合成数据应用传统增强（默认应用增强）')
+    parser.add_argument('--dropout', type=float, default=0.30,
+                       help='Dropout比例 (默认0.30)')
+    parser.add_argument('--seed', type=int, default=42,
+                       help='随机种子 (默认42)')
+    parser.add_argument('--label_smoothing', type=float, default=0.0,
+                       help='Label smoothing系数 (默认0.0)')
     
     args = parser.parse_args()
+    
+    # 设置随机种子
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    if torch.backends.mps.is_available():
+        torch.mps.manual_seed(args.seed)
     
     # 设置设备
     if args.device == 'auto':
@@ -259,6 +271,8 @@ def main():
     print(f"目标准确率: {args.target_acc}%")
     print(f"合成数据比例: {args.synthetic_ratio:.2f}")
     print(f"合成数据增强: {'否' if args.no_augment_synthetic else '是'}")
+    print(f"Dropout: {args.dropout}")
+    print(f"随机种子: {args.seed}")
     
     # 检查合成数据是否存在
     synthetic_dir = Path(args.synthetic_data_dir)
@@ -278,17 +292,17 @@ def main():
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         synthetic_ratio=args.synthetic_ratio,
-        augment_synthetic=not args.no_augment_synthetic
+        augment_synthetic=not args.no_augment_synthetic,
+        seed=args.seed
     )
     
     # 创建模型
     print(f"\n创建ResNet-18模型...")
-    model = ResNet18Classifier(num_classes=3, pretrained=args.pretrained).to(device)
+    model = ResNet18Classifier(num_classes=3, pretrained=args.pretrained, dropout=args.dropout).to(device)
     
     # 损失函数和优化器
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
     # 训练
     print(f"\n{'='*70}")
@@ -317,9 +331,6 @@ def main():
         val_loss, val_acc, _, _ = validate(
             model, val_loader, criterion, device
         )
-        
-        # 更新学习率
-        scheduler.step()
         
         # 记录历史
         history['train_loss'].append(train_loss)
