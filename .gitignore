@@ -15,8 +15,7 @@ dist/
 build/
 
 # Data (不提交到 Git)
-data/raw/
-data/processed/
+data/
 *.zip
 
 # 输出目录（测试和评估结果）
