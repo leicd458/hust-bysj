@@ -1,0 +1,292 @@
+\documentclass[supercite]{../Hust-undergraduate-translation/Experimental_Report}
+
+\title{\textit{Al-Dhabyani W, Gomaa M, Khaled H, et al. Dataset of breast ultrasound images[J]. Data in Brief, 2020, 28: 104863.}}
+\school{计算机科学与技术学院}
+\author{雷传栋} % 请填写作者姓名
+\classnum{CS2202} % 请填写班级
+\stunum{U202211999} % 请填写学号
+\instructor{陆枫} % 请填写指导教师
+\usepackage{zhnumber} % change section number to chinese
+\usepackage{tikz}
+\usetikzlibrary{mindmap,trees}
+\usepackage{algorithm, multirow}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{framed}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{tabu}
+\usepackage{xltxtra}
+\usepackage{bm}
+\usepackage{longtable}
+\usepackage{tikz}
+\usepackage{pdfpages}
+\usepackage{tikzscale}
+\usepackage{pgfplots}
+\usepackage{graphicx}
+\pgfplotsset{compat=1.16}
+
+\newcommand{\cfig}[3]{
+  \begin{figure}[htb]
+    \centering
+    \includegraphics[width=#2\textwidth]{images/#1.tikz}
+    \caption{#3}
+    \label{fig:#1}
+  \end{figure}
+}
+
+\newcommand{\sfig}[3]{
+  \begin{subfigure}[b]{#2\textwidth}
+    \includegraphics[width=\textwidth]{images/#1.tikz}
+    \caption{#3}
+    \label{fig:#1}
+  \end{subfigure}
+}
+
+\newcommand{\xfig}[3]{
+  \begin{figure}[htb]
+    \centering
+    #3
+    \caption{#2}
+    \label{fig:#1}
+  \end{figure}
+}
+
+\newcommand{\rfig}[1]{\autoref{fig:#1}}
+\newcommand{\ralg}[1]{\autoref{alg:#1}}
+\newcommand{\rthm}[1]{\autoref{thm:#1}}
+\newcommand{\rlem}[1]{\autoref{lem:#1}}
+\newcommand{\reqn}[1]{\autoref{eqn:#1}}
+\newcommand{\rtbl}[1]{\autoref{tbl:#1}}
+
+\algnewcommand\Null{\textsc{null }}
+\algnewcommand\algorithmicinput{\textbf{Input:}}
+\algnewcommand\Input{\item[\algorithmicinput]}
+\algnewcommand\algorithmicoutput{\textbf{Output:}}
+\algnewcommand\Output{\item[\algorithmicoutput]}
+\algnewcommand\algorithmicbreak{\textbf{break}}
+\algnewcommand\Break{\algorithmicbreak}
+\algnewcommand\algorithmiccontinue{\textbf{continue}}
+\algnewcommand\Continue{\algorithmiccontinue}
+\newcommand{\LeftCom}[1]{\State $\triangleright$ #1}
+
+\newtheorem{thm}{定理}[section]
+\newtheorem{lem}{引理}[section]
+\renewcommand {\thefigure} {\arabic{figure}}
+\colorlet{shadecolor}{black!15}
+
+\theoremstyle{definition}
+\newtheorem{alg}{算法}[section]
+\def\thmautorefname~#1\null{定理~#1~\null}
+\def\lemautorefname~#1\null{引理~#1~\null}
+\def\algautorefname~#1\null{算法~#1~\null}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[skins]{tcolorbox}
+\tcbuselibrary{breakable}
+\newtcolorbox{abox}[1][]{enhanced,
+	fonttitle = \heiti \large \bfseries,
+	colbacktitle =black,
+	coltitle=white,
+	attach boxed title to top left = {yshift = -5pt},
+	fontupper = \kaishu,
+	arc = 4pt,
+	colframe=black,
+	toprule  = 1pt,
+	rightrule = 1pt,
+	top = 10pt,
+	title=#1,
+	breakable
+}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}  
+\begin{document}
+
+\maketitle
+\clearpage
+
+\pagenumbering{Roman}
+
+\pagenumbering{arabic}
+
+\begin{abstract}
+乳腺癌是全球女性死亡的最常见原因之一。早期检测有助于减少早期死亡人数。本文介绍的数据回顾了使用超声扫描的乳腺癌医学图像。乳腺超声数据集分为三类：正常、良性和恶性图像。当与机器学习结合时，乳腺超声图像在乳腺癌的分类、检测和分割方面可以产生优异的结果。
+\end{abstract}
+
+\section{数据}
+
+基线收集的数据包括25至75岁女性的乳腺超声图像。这些数据于2018年收集。患者总数为600名女性患者。
+
+数据集包含780张图像，平均图像大小为500$\times$500像素。图像采用PNG格式。图像分为三类：正常、良性和恶性。每类的图像数量如表1所示。
+
+\begin{table}[htbp]
+\centering
+\caption{数据集组成}
+\label{tbl:dataset_composition}
+\begin{tabular}{|l|c|}
+\hline
+类别 & 图像数量 \\
+\hline
+Normal(正常) & 133 \\
+\hline
+Benign(良性) & 437 \\
+\hline
+Malignant(恶性) & 210 \\
+\hline
+\textbf{总计} & \textbf{780} \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{规格说明表}
+
+\begin{table}[htbp]
+\centering
+\caption{数据规格说明表}
+\label{tbl:data_specification}
+\begin{tabular}{|l|p{9cm}|}
+\hline
+项目 & 内容 \\
+\hline
+学科领域 & 医学与牙科学 \\
+\hline
+具体学科领域 & 放射学与成像 \\
+\hline
+数据类型 & 图像和掩码(mask)图像 \\
+\hline
+数据获取方式 & LOGIQ E9超声和LOGIQ E9 Agile超声系统 \\
+\hline
+数据格式 & PNG \\
+\hline
+实验因素 & 所有图像都被分类为正常、良性和恶性 \\
+\hline
+实验特征 & 当医学图像用于训练深度学习模型时，它们可以为乳腺癌的分类、检测和分割提供快速而准确的结果 \\
+\hline
+数据来源位置 & 埃及开罗Baheya医院(女性癌症早期检测和治疗) \\
+\hline
+数据访问地址 & https://scholar.cu.edu.eg/?q=afahmy/pages/dataset \\
+\hline
+相关研究论文 & Al-Dhabyani W, et al. Deep Learning Approaches for Data Augmentation and Classification of Breast Masses using Ultrasound Images[J]. Int. J. Adv. Comput. Sci. Appl., 2019 \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{数据价值}
+
+本数据集具有重要的研究价值和应用前景：
+
+\begin{enumerate}
+\item 超声扫描主要用于检查和早期检测乳腺癌。此外，与其他放射学成像技术相比，它是安全的。
+
+\item 乳腺超声数据集可用于训练机器学习模型，这些模型可以对乳腺癌中肿块或微钙化的早期征象进行分类、检测和分割。
+
+\item 对乳腺癌分类、检测和分割感兴趣的研究人员可以利用这些乳腺超声图像数据，将其与其他人的数据集结合，并进行分析以获得更深入的见解。
+
+\item 该数据集内容全面，包含了乳腺癌状态(正常、良性和恶性)。
+
+\item 据我们所知，这是首个公开发布的乳腺超声数据集。
+\end{enumerate}
+
+\section{实验设计、材料和方法}
+
+\subsection{数据集收集}
+
+超声(US)图像通常是灰度的。它们以DICOM格式收集并存储在Baheya医院。收集和标注图像所用的时间约为一年。US数据集分为三类：正常、良性和恶性。
+
+图像来源于两种不同的超声系统：
+\begin{itemize}
+\item LOGIQ E9超声系统
+\item LOGIQ E9 Agile超声系统
+\end{itemize}
+
+这两种都是GE医疗的高端超声设备，能够提供高分辨率的乳腺图像。
+
+\subsection{预处理}
+
+为了使数据集有用，应该执行某些任务。数据中包含需要删除的重复图像。此外，Baheya医院的放射科医生审查并纠正了错误的标注。DICOM图像使用DICOM转换器应用程序转换为PNG格式。
+
+细化数据集后，US图像的数量减少到780张。图像分为三类(情况)：正常、良性和恶性。所有图像都被裁剪为不同的大小，以从图像中移除未使用和不重要的边界。我们使用Fast Photo Crop来完成此任务。图像标注被添加到图像名称中。Baheya医院的专门放射科医生审查并检查了所有图像。
+
+预处理流程如下：
+
+\begin{enumerate}
+\item \textbf{去重}：移除数据集中的重复图像
+
+\item \textbf{标注审核}：由专业放射科医生检查并修正错误标注
+
+\item \textbf{格式转换}：DICOM $\rightarrow$ PNG (使用RadiAnt DICOM Viewer)
+
+\item \textbf{裁剪}：裁剪图像边界，聚焦于感兴趣区域(ROI)
+
+\item \textbf{命名规范}：按照"类别\_编号.png"的格式重命名文件
+\end{enumerate}
+
+\subsection{Ground Truth(真值)}
+
+执行Ground Truth(图像边界)是为了使超声数据集更有益。使用Matlab软件来执行此步骤。对每张图像分别建立自由手绘分割(Freehand Segmentation)。掩码(mask)图像与原始图像一一对应。
+
+为每种类型的乳腺癌类别创建了三个文件夹。每个文件夹包含其类别的图像。图像名称包括类别名称和图像编号。此外，掩码图像的名称与US图像相同，只是在图像末尾添加"\_mask"。
+
+Ground Truth的创建过程：
+\begin{enumerate}
+\item 使用Matlab的图像分割工具
+\item 由经验丰富的放射科医生手工勾勒病灶边界
+\item 将分割结果保存为二值mask图像(白色=前景/病灶，黑色=背景)
+\item mask图像尺寸与原图像完全对应
+\end{enumerate}
+
+数据集文件夹结构如下：
+\begin{verbatim}
+dataset/
+├── normal/
+│   ├── normal_1.png
+│   ├── normal_1_mask.png
+│   ├── normal_2.png
+│   └ ...
+├── benign/
+│   ├── benign_1.png
+│   ├── benign_1_mask.png
+│   └ ...
+└── malignant/
+    ├── malignant_1.png
+    ├── malignant_1_mask.png
+    └ ...
+\end{verbatim}
+
+\subsection{伦理考量}
+
+研究者意识到患者有权保护其私生活和疾病免受公众审视。为此，研究者确保患者和医院充分了解本研究的客观目标。此外，每位患者的数据都保持未知，其疾病状态得到最高程度的保密。
+
+具体的隐私保护措施包括：
+\begin{enumerate}
+\item 在数据收集前获得所有患者的知情同意
+\item 从图像中移除所有患者身份标识信息
+\item 对数据进行匿名化处理
+\item 严格按照医院伦理委员会批准的程序进行研究
+\item 数据仅用于学术研究目的
+\end{enumerate}
+
+\section{致谢}
+
+作者感谢Baheya医院管理层准许为本项研究工作获取和使用医学图像。此外，作者感谢Mohamed Hamed博士对管理数据集的支持。
+
+\section{利益冲突声明}
+
+作者声明不存在已知的可能影响本文报告工作的竞争性财务利益或个人关系。
+
+\section{参考文献}
+
+\begin{thebibliography}{4}
+
+\bibitem{ref1} Al-Dhabyani W, Gomaa M, Khaled H, et al. Deep learning approaches for data augmentation and classification of breast masses using ultrasound images[J]. International Journal of Advanced Computer Science and Applications, 2019, 10(5).
+
+\bibitem{ref2} Medixant. RadiAnt DICOM Viewer, 2018. https://www.radiantviewer.com.
+
+\bibitem{ref3} Szmieszny. Fast Photo Crop, 2013. https://www.microsoft.com/ar-eg/p/fast-photo-crop/9wzdncrdnvpv.
+
+\bibitem{ref4} MATLAB and Statistics Toolbox Release, The MathWorks, Inc., Natick, Massachusetts, United States, 2015b.
+
+\end{thebibliography}
+
+\end{document}
