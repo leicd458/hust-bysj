@@ -12,11 +12,12 @@ API 路由:
 - GET  /api/model_info    当前模型信息
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 import time
+from io import BytesIO
 
 from config import (
     MODEL_TYPE, MODEL_PATH, MODEL_META,
@@ -54,6 +55,12 @@ def index():
 def history():
     """诊断历史记录页"""
     return render_template('history.html')
+
+
+@app.route('/dashboard')
+def dashboard():
+    """系统仪表盘"""
+    return render_template('dashboard.html')
 
 
 @app.route('/predict', methods=['POST'])
@@ -207,6 +214,53 @@ def api_clear_history():
     """清空所有历史"""
     count = clear_all_history()
     return jsonify({'success': True, 'deleted': count})
+
+
+@app.route('/report/pdf', methods=['POST'])
+def report_pdf():
+    """生成 PDF 诊断报告
+
+    请求体 JSON:
+    {
+        "result": { ... 预测结果 ... },
+        "image_base64": "...",
+        "gradcam_base64": "..."
+    }
+    """
+    try:
+        from pdf_report import generate_pdf_report, check_dependencies
+        ok, msg = check_dependencies()
+        if not ok:
+            return jsonify({'error': msg}), 500
+
+        data = request.get_json() or {}
+        result = data.get('result', {})
+
+        # 如果没有传 result，用最近一条记录
+        if not result:
+            recent = get_recent_history(limit=1)
+            if recent:
+                result = recent[0]
+
+        if not result:
+            return jsonify({'error': '没有可生成报告的诊断数据'}), 400
+
+        pdf_bytes = generate_pdf_report(
+            result,
+            image_base64=data.get('image_base64', ''),
+            gradcam_base64=data.get('gradcam_base64', ''),
+        )
+
+        if pdf_bytes is None:
+            return jsonify({'error': 'PDF 生成失败'}), 500
+
+        buf = BytesIO(pdf_bytes)
+        filename = f"diagnosis_{result.get('predicted_class', 'report')}_{time.strftime('%Y%m%d_%H%M%S')}.pdf"
+        return send_file(buf, mimetype='application/pdf',
+                         as_attachment=True, download_name=filename)
+
+    except Exception as e:
+        return jsonify({'error': f'PDF 生成失败: {str(e)}'}), 500
 
 
 # ==================== 工具函数 ====================
