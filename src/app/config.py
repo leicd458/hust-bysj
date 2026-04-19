@@ -9,18 +9,49 @@ from pathlib import Path
 # 项目根目录
 BASE_DIR = Path(__file__).parent.parent.parent
 
-# 模型配置
-MODEL_PATH = str(BASE_DIR / 'src/experiment/stage4/outputs/exp1_seed2024/best_model.pth')
+# ==================== 模型配置 ====================
 
-# 上传配置
+# 当前使用的模型: efficientnet_b0 (Stage5最优, 94.87%) / resnet18 (Stage4, 88.89%)
+MODEL_TYPE = 'efficientnet_b0'  # 可选: resnet18, efficientnet_b0
+
+MODEL_PATHS = {
+    'resnet18': str(BASE_DIR / 'src/experiment/stage4/outputs/exp1_seed2024/best_model.pth'),
+    'efficientnet_b0': str(BASE_DIR / 'src/experiment/stage5/outputs/best_model.pth'),
+}
+
+MODEL_PATH = MODEL_PATHS.get(MODEL_TYPE, MODEL_PATHS['efficientnet_b0'])
+
+# 模型元信息（用于仪表盘展示）
+MODEL_META = {
+    'resnet18': {
+        'name': 'ResNet-18',
+        'test_acc': '88.89%',
+        'params': '11.7M',
+        'input_size': 224,
+        'description': '基线模型，混合数据增强 + FocalLoss'
+    },
+    'efficientnet_b0': {
+        'name': 'EfficientNet-B0',
+        'test_acc': '94.87%',
+        'params': '4.0M',
+        'input_size': 300,
+        'description': '最优模型，Stratified划分+均衡采样+LabelSmoothing+TTA'
+    }
+}
+
+# ==================== 上传配置 ====================
 UPLOAD_FOLDER = str(BASE_DIR / 'src/app/uploads')
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp'}
+MAX_BATCH_FILES = 10  # 批量上传最大文件数
 
-# Flask配置
+# ==================== 数据库配置 ====================
+DB_PATH = str(BASE_DIR / 'src/app/data/history.db')
+
+# ==================== Flask配置 ====================
 SECRET_KEY = os.environ.get('SECRET_KEY') or 'breast-cancer-diagnosis-secret-key-2024'
 
-# 服务器配置
+# ==================== 服务器配置 ====================
 HOST = '0.0.0.0'
 PORT = 5000
 DEBUG = True
