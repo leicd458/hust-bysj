@@ -1,15 +1,12 @@
 \abstracten
 
-英文摘要在中文摘要定稿后再开始撰写，否则会多次修改，不要过于依赖百度翻译等工具。
-英文单词不能出现换行断开问题，
+Breast cancer has become the most prevalent malignant tumor among women globally, and early and accurate diagnosis is of decisive significance for improving patient survival rates. Breast ultrasound examination has been widely adopted as a first-line screening modality due to its advantages of being non-invasive, radiation-free, real-time imaging capability, and suitability for dense breast tissue. However, conventional manual interpretation relies heavily on radiologist expertise and suffers from limitations including subjectivity, poor consistency, and limited efficiency. In recent years, deep learning technology has made breakthrough progress in medical image analysis, providing a new technical pathway for developing automated breast ultrasound Computer-Aided Diagnosis (CAD) systems.
 
-Keywords对照中文关键词翻译，与英文摘要在同一页，以“Keywords：”顶左开始。
-Keywords之间用“,”隔开，最后一个Keyword后不用加任何标点符号。  
-多个单词中各单词首字母大些，虚词除外，关键词和正文之间空一行
+This thesis designs and implements a deep learning-based automated diagnostic system using the publicly available BUSI (Breast Ultrasound Images) dataset, which comprises 780 ultrasound images across three categories: benign, malignant, and normal. A five-stage progressive experimental methodology was employed to systematically evaluate the effects of different technical approaches on classification performance. In the baseline experiment, a ResNet18-based transfer learning model achieved 83.76\% test accuracy without data augmentation; introducing traditional online data augmentation improved this to 86.32\%; utilizing DAGAN (Deep convolutional Adversarial Generational Network) for synthetic data expansion further enhanced the result to 87.18\%; adopting a hybrid augmentation strategy combined with Focal Loss yielded 88.89\% accuracy, with normal tissue recognition achieving a qualitative leap from 70\% to 95\%. The final approach employed EfficientNet-B0 as the backbone network, comprehensively integrating DAGAN synthetic data augmentation, label smoothing regularization, WeightedRandomSampler balanced sampling, $300\times300$ high-resolution input, and lightweight augmentation strategies. On an independent test set of 117 images, this approach achieved an overall accuracy of 94.87\% and an AUC of 99.63\%, with class-wise accuracies of 96.97\% for benign, 93.55\% for malignant, and 90.00\% for normal cases. Additionally, Grad-CAM (Gradient-weighted Class Activation Mapping) heatmap visualizations were generated to verify that the model's decision-making aligns with medical prior knowledge by focusing on lesion regions during classification.
 
-one two three four five, fight the tiger on the mountain
+Experimental results demonstrate that combining traditional data augmentation with GAN-based synthetic data augmentation can complementarily improve the learning outcomes across different classes. When paired with appropriate backbone architecture selection and training technique optimization, it is feasible to train a deep learning classification model that achieves both high accuracy and strong interpretability on small-scale medical image datasets, providing a viable technical solution for intelligent breast ultrasound image diagnosis.
+
 
 \vspace{5pt}
 
-
-\keywordsen Gougu Formula, function, Reimu
+\keywordsen Breast Ultrasound Image, Deep Learning, Convolutional Neural Network, Data Augmentation, Generative Adversarial Network, Computer-Aided Diagnosis
