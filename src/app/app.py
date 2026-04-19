@@ -24,6 +24,8 @@ from config import (
     HOST, PORT, DEBUG, allowed_file as _allowed_file, MAX_BATCH_FILES
 )
 from model_handler import ModelHandler
+from db import save_diagnosis, save_batch_record, \
+    get_recent_history, get_history_stats, delete_history, clear_all_history
 
 # 创建 Flask 应用
 app = Flask(__name__)
@@ -48,6 +50,12 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/history')
+def history():
+    """诊断历史记录页"""
+    return render_template('history.html')
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     """标准单图预测接口"""
@@ -58,6 +66,13 @@ def predict():
     try:
         image = Image.open(file.stream).convert('RGB')
         result = model_handler.analyze(image, use_tta=False)
+
+        save_diagnosis(
+            result,
+            filename=secure_filename(file.filename),
+            image_size=f"{image.size[0]}x{image.size[1]}",
+        )
+
         return jsonify({'success': True, 'result': result})
     except Exception as e:
         return jsonify({'success': False, 'error': f'分析失败: {str(e)}'}), 500
@@ -74,7 +89,17 @@ def predict_tta():
         t0 = time.time()
         image = Image.open(file.stream).convert('RGB')
         result = model_handler.analyze(image, use_tta=True)
-        result['inference_time_ms'] = round((time.time() - t0) * 1000, 1)
+        elapsed = round((time.time() - t0) * 1000, 1)
+        result['inference_time_ms'] = elapsed
+
+        # 自动保存到历史
+        save_diagnosis(
+            result,
+            filename=secure_filename(file.filename),
+            image_size=f"{image.size[0]}x{image.size[1]}",
+            inference_time_ms=elapsed,
+        )
+
         return jsonify({'success': True, 'result': result})
     except Exception as e:
         return jsonify({'success': False, 'error': f'TTA分析失败: {str(e)}'}), 500
@@ -148,6 +173,40 @@ def api_model_info():
     info['device'] = str(model_handler.device)
     info['supports_tta'] = True
     return jsonify(info)
+
+
+# ==================== 历史记录 API ====================
+
+@app.route('/api/history')
+def api_history():
+    """获取诊断历史记录"""
+    limit = request.args.get('limit', 50, type=int)
+    offset = request.args.get('offset', 0, type=int)
+    records = get_recent_history(limit=limit, offset=offset)
+    return jsonify({'success': True, 'records': records})
+
+
+@app.route('/api/history/stats')
+def api_history_stats():
+    """获取历史统计"""
+    stats = get_history_stats()
+    return jsonify({'success': True, 'stats': stats})
+
+
+@app.route('/api/history/<int:record_id>', methods=['DELETE'])
+def api_delete_history(record_id):
+    """删除单条历史记录"""
+    ok = delete_history(record_id)
+    if ok:
+        return jsonify({'success': True})
+    return jsonify({'error': '记录不存在'}), 404
+
+
+@app.route('/api/history/clear', methods=['DELETE'])
+def api_clear_history():
+    """清空所有历史"""
+    count = clear_all_history()
+    return jsonify({'success': True, 'deleted': count})
 
 
 # ==================== 工具函数 ====================

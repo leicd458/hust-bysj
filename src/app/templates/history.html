@@ -1,0 +1,206 @@
+{% extends "layout.html" %}
+
+{% block title %}诊断历史 - 乳腺癌超声图像诊断系统{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <h2 class="section-title">📋 诊断历史记录</h2>
+
+    <!-- 统计卡片 -->
+    <div id="statsContainer" class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-value" id="statTotal">-</span>
+            <span class="stat-label">总诊断次数</span>
+        </div>
+        <div class="stat-card benign">
+            <span class="stat-value" id="statBenign">-</span>
+            <span class="stat-label">良性</span>
+        </div>
+        <div class="stat-card malignant">
+            <span class="stat-value" id="statMalignant">-</span>
+            <span class="stat-label">恶性</span>
+        </div>
+        <div class="stat-card normal">
+            <span class="stat-value" id="statNormal">-</span>
+            <span class="stat-label">正常</span>
+        </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="history-toolbar">
+        <button class="btn-secondary" onclick="loadHistory()">🔄 刷新</button>
+        <button class="btn-danger" onclick="confirmClearAll()">🗑 清空全部</button>
+        <a href="/" class="btn-back">← 返回首页</a>
+    </div>
+
+    <!-- 历史列表 -->
+    <div class="history-list" id="historyList">
+        <p class="loading-text">加载中...</p>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination">
+        <button id="prevBtn" onclick="changePage(-1)" disabled>上一页</button>
+        <span id="pageInfo">第 1 页</span>
+        <button id="nextBtn" onclick="changePage(1)">下一页</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.history-page { max-width: 1000px; margin: 0 auto; }
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.stat-card {
+    background: #f8f9ff; border-radius: 12px; padding: 20px; text-align: center;
+}
+.stat-value { display: block; font-size: 2rem; font-weight: 700; color: #333; }
+.stat-label { font-size: 0.85rem; color: #888; }
+.stat-card.benign .stat-value { color: #2980b9; }
+.stat-card.malignant .stat-value { color: #c0392b; }
+.stat-card.normal .stat-value { color: #27ae60; }
+
+.history-toolbar {
+    display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;
+}
+
+.btn-danger {
+    background: #e74c3c; color: white; border: none; padding: 8px 18px;
+    border-radius: 8px; cursor: pointer; font-size: 0.95rem;
+}
+.btn-danger:hover { background: #c0392b; }
+
+.btn-back {
+    background: white; color: #667eea; border: 2px solid #667eea;
+    padding: 8px 18px; border-radius: 8px; text-decoration: none;
+    font-size: 0.95rem; margin-left: auto;
+}
+.btn-back:hover { background: #667eea; color: white; }
+
+.history-item {
+    display: flex; align-items: center; gap: 15px;
+    background: white; border-radius: 10px; padding: 16px 20px;
+    margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.history-item .class-badge {
+    width: 50px; height: 50px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-weight: 700;
+    font-size: 0.75rem; color: white; text-align: center; line-height: 1.2;
+}
+.class-badge.benign { background: linear-gradient(135deg, #3498db, #2980b9); }
+.class-badge.malignant { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.class-badge.normal { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+
+.history-info { flex: 1; }
+.history-filename { font-weight: 600; color: #333; font-size: 0.95rem; }
+.history-meta { font-size: 0.82rem; color: #999; margin-top: 3px; }
+.history-conf { text-align: right; min-width: 80px; }
+.history-conf-value { font-size: 1.3rem; font-weight: 700; color: #667eea; }
+.history-time { font-size: 0.8rem; color: #bbb; margin-top: 2px; }
+
+.delete-btn {
+    background: none; border: none; color: #ccc; cursor: pointer;
+    font-size: 1.2rem; padding: 5px 8px; border-radius: 6px;
+}
+.delete-btn:hover { color: #e74c3c; background: #fef0ef; }
+
+.pagination { text-align: center; margin: 25px 0; display: flex; gap: 10px; justify-content: center; align-items: center; }
+.pagination button {
+    padding: 8px 20px; border: 1px solid #ddd; background: white;
+    border-radius: 8px; cursor: pointer; font-size: 0.9rem;
+}
+.pagination button:not(:disabled):hover { background: #f0f0f0; }
+.pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .history-item { flex-wrap: wrap; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 0;
+const PAGE_SIZE = 20;
+
+function loadStats() {
+    fetch('/api/history/stats').then(r => r.json()).then(d => {
+        if (!d.success) return;
+        const s = d.stats;
+        document.getElementById('statTotal').textContent = s.total || 0;
+        document.getElementById('statBenign').textContent = (s.class_distribution || {}).benign || 0;
+        document.getElementById('statMalignant').textContent = (s.class_distribution || {}).malignant || 0;
+        document.getElementById('statNormal').textContent = (s.class_distribution || {}).normal || 0;
+    });
+}
+
+function loadHistory() {
+    const list = document.getElementById('historyList');
+    list.innerHTML = '<p class="loading-text">加载中...</p>';
+
+    fetch(`/api/history?limit=${PAGE_SIZE}&offset=${currentPage * PAGE_SIZE}`)
+        .then(r => r.json())
+        .then(d => {
+            if (!d.success || !d.records.length) {
+                list.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">暂无记录</p>';
+                document.getElementById('nextBtn').disabled = true;
+                return;
+            }
+
+            list.innerHTML = d.records.map(r => `
+                <div class="history-item">
+                    <div class="class-badge ${r.predicted_class}">${r.predicted_class_cn}</div>
+                    <div class="history-info">
+                        <div class="history-filename">${r.filename || '未命名'}</div>
+                        <div class="history-meta">${r.image_size || ''} | TTA:${r.use_tta ? '是' : '否'} | 耗时:${r.inference_time_ms || '-'}ms</div>
+                    </div>
+                    <div class="history-conf">
+                        <div class="history-conf-value">${(r.confidence * 100).toFixed(1)}%</div>
+                        <div class="history-time">${formatTime(r.created_at)}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteRecord(${r.id})">&times;</button>
+                </div>
+            `).join('');
+
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = d.records.length < PAGE_SIZE;
+            document.getElementById('pageInfo').textContent = `第 ${currentPage + 1} 页`;
+        });
+}
+
+function changePage(delta) {
+    currentPage += delta;
+    loadHistory();
+}
+
+function deleteRecord(id) {
+    if (!confirm('确定删除这条记录？')) return;
+    fetch(`/api/history/${id}`, { method: 'DELETE' })
+        .then(() => { loadHistory(); loadStats(); });
+}
+
+function confirmClearAll() {
+    if (!confirm('确定清空所有历史记录？此操作不可撤销！')) return;
+    fetch('/api/history/clear', { method: 'DELETE' }).then(r => r.json())
+        .then(d => { alert(`已删除 ${d.deleted} 条记录`); loadHistory(); loadStats(); });
+}
+
+function formatTime(s) {
+    if (!s) return '';
+    try {
+        // SQLite 格式: 2026-04-19 23:55:00
+        return s.replace('T', ' ').slice(0, 16);
+    } catch(e) { return s; }
+}
+
+// 初始化
+loadStats();
+loadHistory();
+</script>
+{% endblock %}
