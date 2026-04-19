@@ -36,3 +36,21 @@ logs/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# LaTeX 辅助文件（编译生成，不需要入库）
+*.aux
+*.log
+*.toc
+*.bbl
+*.blg
+*.bcf
+*.out
+*.run.xml
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+missfont.log
+*.ptc*/
