@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 配置文件
+支持本地开发和Docker容器化部署
 """
 
 import os
 from pathlib import Path
 
-# 项目根目录
-BASE_DIR = Path(__file__).parent.parent.parent
+# 项目根目录（支持环境变量覆盖，用于 Docker 部署）
+BASE_DIR = Path(os.environ.get('APP_BASE_DIR', '/app'))
 
 # ==================== 模型配置 ====================
 
@@ -15,8 +16,8 @@ BASE_DIR = Path(__file__).parent.parent.parent
 MODEL_TYPE = 'efficientnet_b0'  # 可选: resnet18, efficientnet_b0
 
 MODEL_PATHS = {
-    'resnet18': str(BASE_DIR / 'src/experiment/stage4/outputs/exp1_seed2024/best_model.pth'),
-    'efficientnet_b0': str(BASE_DIR / 'src/experiment/stage5/outputs/best_model.pth'),
+    'resnet18': str(BASE_DIR / 'models/best_resnet18.pth'),
+    'efficientnet_b0': str(BASE_DIR / 'models/best_model.pth'),
 }
 
 MODEL_PATH = MODEL_PATHS.get(MODEL_TYPE, MODEL_PATHS['efficientnet_b0'])

@@ -1,0 +1,44 @@
+# ==================== 版本控制 ====================
+.git
+.gitignore
+.gitattributes
+
+# ==================== Python 缓存 ====================
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# ==================== IDE ====================
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ==================== 文档 ====================
+README.md
+docs/
+stage/
+
+# ==================== 数据（运行时生成）====================
+uploads/*
+data/*.db
+!data/.gitkeep
+
+# ==================== 实验代码（不需要打包）====================
+src/experiment/
+src/shared/
+src/data/
+
+# ==================== OS ====================
+.DS_Store
+Thumbs.db
+
+# ==================== Docker ====================
+Dockerfile
+.dockerignore
+docker-compose*.yml

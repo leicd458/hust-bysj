@@ -57,12 +57,6 @@ def history():
     return render_template('history.html')
 
 
-@app.route('/dashboard')
-def dashboard():
-    """系统仪表盘"""
-    return render_template('dashboard.html')
-
-
 @app.route('/predict', methods=['POST'])
 def predict():
     """标准单图预测接口"""
@@ -126,7 +120,7 @@ def predict_batch():
         return jsonify({'error': '没有选择文件'}), 400
 
     # 限制数量
-    valid_files = [f for f in files if f.filename and allowed_file(f.filename)]
+    valid_files = [f for f in files if f.filename and _allowed_file(f.filename)]
     if len(valid_files) > MAX_BATCH_FILES:
         return jsonify({
             'error': f'最多支持{MAX_BATCH_FILES}张图片同时分析',

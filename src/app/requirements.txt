@@ -2,15 +2,10 @@
 Flask==3.0.0
 Werkzeug==3.0.1
 
-# 深度学习
-torch>=2.1.0
-torchvision>=0.16.0
+# 深度学习（torch/torchvision 在 Dockerfile 中通过 CPU-only index-url 单独安装）
 Pillow>=10.1.0
 numpy>=1.26.2
-opencv-python>=4.8.0
+opencv-python-headless>=4.8.0   # headless 版本更小
 
 # PDF 报告生成
 reportlab>=4.0.0
-
-# 模型相关
-# 注意：torchvision会自动安装torch依赖

@@ -1,34 +1,48 @@
-# 使用Python 3.11基础镜像
-FROM python:3.11-slim
+# ============================================================
+#  乳腺癌超声图像诊断系统 - Docker 镜像（轻量版）
+#  基础镜像: python:3.11-slim-bookworm (Debian Stable)
+#  PyTorch: CPU-only (~200MB vs CUDA ~2.5GB)
+#  OpenCV: headless 版本 (无 GUI 依赖)
+#  预计总大小: ~800MB - ~1GB
+# ============================================================
 
-# 设置工作目录
+FROM python:3.11-slim-bookworm
+
 WORKDIR /app
 
-# 安装系统依赖
-RUN apt-get update && apt-get install -y \
-    libgomp1 \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# 复制requirements.txt
+# ==================== Python 依赖 ====================
 COPY requirements.txt .
 
-# 安装Python依赖
-RUN pip install --no-cache-dir -r requirements.txt
+# 先装 CPU-only PyTorch（指定 wheel 源，避免下载 2.5GB 的 CUDA 版）
+# 再装其余 Python 包
+RUN pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    torch torchvision && \
+    pip install --no-cache-dir -r requirements.txt
 
-# 复制应用代码
-COPY . .
+# ==================== 复制应用代码 ====================
+COPY app.py .
+COPY config.py .
+COPY model_handler.py .
+COPY db.py .
+COPY pdf_report.py .
 
-# 创建上传目录
-RUN mkdir -p uploads
+COPY static/ ./static/
+COPY templates/ ./templates/
 
-# 暴露端口
+# ==================== 模型权重 ====================
+COPY models/ ./models/
+
+# 运行时目录
+RUN mkdir -p uploads data
+
 EXPOSE 5000
 
-# 设置环境变量
-ENV FLASK_APP=app.py
-ENV PYTHONUNBUFFERED=1
+ENV FLASK_APP=app.py \
+    PYTHONUNBUFFERED=1 \
+    APP_BASE_DIR=/app
 
-# 运行应用
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')" || exit 1
+
 CMD ["python", "app.py"]

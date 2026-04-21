@@ -1,83 +1,88 @@
 {% extends "layout.html" %}
 
-{% block title %}乳腺癌超声图像诊断系统 - 首页{% endblock %}
+{% block title %}图像诊断 - 乳腺癌超声诊断系统{% endblock %}
 
 {% block content %}
 <div class="upload-section">
-    <h2 class="section-title">📤 上传超声图像</h2>
+    <h2 class="section-title">上传超声图像</h2>
 
-    <!-- 模式控制栏 -->
+    <!-- 模式控制 -->
     <div class="mode-bar">
         <label class="mode-toggle">
             <input type="checkbox" id="ttaToggle" checked>
-            <span class="toggle-slider"></span>
             <span id="ttaLabel" class="toggle-text">TTA 增强推理（推荐）</span>
         </label>
-        <label class="mode-toggle">
-            <input type="checkbox" id="batchToggle">
-            <span class="toggle-slider"></span>
-            <span class="toggle-text">批量模式</span>
-        </label>
+        <div class="mode-switch">
+            <button class="mode-btn active" id="singleModeBtn" onclick="switchMode('single')">单张</button>
+            <button class="mode-btn" id="batchModeBtn" onclick="switchMode('batch')">批量</button>
+        </div>
     </div>
 
     <!-- 上传区域 -->
     <div class="upload-area" id="uploadArea">
         <input type="file" id="imageInput" accept="image/*" hidden>
         <div class="upload-placeholder" id="uploadPlaceholder">
-            <div class="upload-icon">📁</div>
-            <p class="upload-text" id="singleHint">点击或拖拽图像到此处</p>
-            <p class="upload-hint" id="batchHint" style="display:none;">点击或拖拽多张图像到此处（最多10张）</p>
-            <p class="upload-hint">支持格式: PNG, JPG, JPEG, BMP (最大16MB)</p>
+            <div class="upload-icon">&#128193;</div>
+            <p class="upload-text" id="uploadHintText">点击或拖拽图像到此处</p>
+            <p class="upload-hint">支持 PNG / JPG / JPEG / BMP，单张最大 16MB / 批量最多 10 张</p>
         </div>
 
         <!-- 单图预览 -->
         <div class="preview-container" id="previewContainer" style="display: none;">
-            <img id="previewImage" class="preview-image" alt="预览图像"
+            <img id="previewImage" class="preview-image"
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
             <button class="btn-secondary" id="changeImage">更换图像</button>
         </div>
 
-        <!-- 批量预览列表 -->
+        <!-- 批量预览 -->
         <div class="batch-preview-container" id="batchPreviewContainer" style="display: none;">
-            <h4>待分析文件 (<span id="batchCount">0</span>)</h4>
-            <div id="batchPreviewList"></div>
+            <div class="batch-header-row">
+                <h4>待分析文件 (<span id="batchCount">0</span>)</h4>
+                <button class="btn-add-more" id="addMoreBtn">+ 继续添加</button>
+            </div>
+            <div class="batch-grid" id="batchPreviewGrid"></div>
         </div>
     </div>
 
     <div class="button-group">
         <button class="btn-primary" id="analyzeBtn" disabled>
-            <span class="btn-text">🔍 开始分析</span>
+            <span class="btn-text" id="analyzeBtnText">开始分析</span>
             <span class="btn-loading" style="display: none;">
-                <span class="spinner"></span> 分析中...
+                <span class="spinner"></span> <span id="loadingText">分析中...</span>
             </span>
         </button>
+    </div>
+
+    <!-- 批量进度条 -->
+    <div class="progress-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-info">
+            <span id="progressLabel">正在分析 1/5 ...</span>
+            <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
     </div>
 </div>
 
 <!-- 结果区域 -->
 <div class="result-section" id="resultSection" style="display: none;">
-    <h2 class="section-title">📊 诊断结果</h2>
-
+    <h2 class="section-title">诊断结果</h2>
     <div class="result-container">
 
-        <!-- ========== 单图结果 ========== -->
+        <!-- 单图结果 -->
         <div id="singleResultCard">
-
-            <!-- 诊断卡片 -->
             <div class="result-card diagnosis-card">
-                <h3 class="card-title">诊断结果
-                    <span id="inferenceInfo" style="font-size:0.8em; font-weight:normal; color:#888; float:right;"></span>
+                <h3 class="card-title">
+                    诊断结论
+                    <span id="inferenceInfo"></span>
                 </h3>
                 <div class="diagnosis-result">
                     <div class="diagnosis-class" id="diagnosisClass">-</div>
                     <div class="diagnosis-confidence">
-                        <span class="confidence-label">置信度:</span>
-                        <span class="confidence-value" id="confidenceValue">-</span>
+                        置信度：<span class="confidence-value" id="confidenceValue">-</span>
                     </div>
                 </div>
-
                 <div class="probabilities">
-                    <h4 class="prob-title">各类别概率</h4>
+                    <h4 class="prob-title">各类别概率分布</h4>
                     {% for name, label_cn in [("benign","良性 (Benign)"), ("malignant","恶性 (Malignant)"), ("normal","正常 (Normal)")] %}
                     <div class="prob-item">
                         <span class="prob-label">{{ label_cn }}</span>
@@ -90,10 +95,10 @@
                 </div>
             </div>
 
-            <!-- Grad-CAM 可视化 -->
+            <!-- Grad-CAM -->
             <div class="result-card gradcam-card">
-                <h3 class="card-title">注意力热力图对比</h3>
-                <p class="card-subtitle">模型关注的区域（红色表示高关注度）</p>
+                <h3 class="card-title">注意力热力图</h3>
+                <p class="card-subtitle">模型关注的区域（暖色 = 高关注度）</p>
                 <div class="gradcam-comparison">
                     <div class="gradcam-item">
                         <h4 class="gradcam-label">原始图像</h4>
@@ -111,34 +116,38 @@
             </div>
         </div>
 
-        <!-- ========== 批量结果 ========== -->
+        <!-- 批量结果 -->
         <div id="batchResultCard" style="display: none;">
+
+            <!-- 批量统计摘要 -->
             <div class="result-card batch-summary-card">
-                <h3 class="card-title">批量诊断摘要</h3>
-                <div id="batchSummary" style="display:none;"></div>
+                <h3 class="card-title">分析摘要</h3>
+                <div class="summary-grid" id="batchSummaryGrid"></div>
+                <div class="summary-actions" id="summaryActions">
+                    <button class="action-chip" onclick="exportBatchReport()">
+                        &#128196; 导出报告
+                    </button>
+                    <button class="action-chip danger" onclick="clearBatchResults()">
+                        &#128465; 清空结果
+                    </button>
+                </div>
             </div>
 
-            <div class="result-card batch-detail-card">
-                <h3 class="card-title">详细结果</h3>
-                <table class="batch-table" id="batchDetailTable" style="display:none;">
-                    <thead>
-                        <tr><th>文件名</th><th>诊断</th><th>置信度</th><th>概率条</th></tr>
-                    </thead>
-                    <tbody id="batchDetailBody"></tbody>
-                </table>
-            </div>
+            <!-- 批量结果列表：卡片式，可展开详情 -->
+            <div class="batch-results-list" id="batchResultsList"></div>
+
         </div>
 
     </div>
 
     <div class="disclaimer">
-        <p>⚠️ <strong>免责声明：</strong>本系统仅供学术研究和辅助参考，不能替代专业医生的诊断。如有疑问，请咨询专业医疗人员。</p>
+        <p>&#9888;&#65039; <strong>免责声明：</strong>本系统仅供学术研究和辅助参考，不能替代专业医生的诊断。如有疑问请咨询专业医疗人员。</p>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', initApp);
 </script>
 {% endblock %}

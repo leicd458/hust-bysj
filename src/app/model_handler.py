@@ -91,7 +91,7 @@ class GradCAM:
             return target_name
         # 支持点分路径如 features.8
         parts = target_name.split('.')
-        module = self.model if hasattr(model, 'backbone') else self.model
+        module = self.model
         base = module.backbone if hasattr(module, 'backbone') else module
         for part in parts:
             if part.isdigit():
@@ -268,8 +268,8 @@ class ModelHandler:
             ('rot-10', TF.rotate(image, -10)),
             ('rot+15', TF.rotate(image, 15)),
             ('rot-15', TF.rotate(image, -15)),
-            ('zoom_in', TF.resized(image, int(img_size * 1.05))),
-            ('zoom_out', TF.resized(image, int(img_size * 0.95))),
+            ('zoom_in', TF.resize(image, int(img_size * 1.05))),
+            ('zoom_out', TF.resize(image, int(img_size * 0.95))),
         ]
 
         all_probs = []
