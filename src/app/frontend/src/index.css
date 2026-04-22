@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==================== CSS Variables (与原设计一致) ==================== */
+:root {
+  --primary: #0e7490;
+  --primary-light: #22d3ee;
+  --primary-dark: #0c4a6e;
+  --primary-bg: #ecfeff;
+
+  --benign: #0891b2;
+  --benign-bg: #ecfeff;
+  --malignant: #dc2626;
+  --malignant-bg: #fef2f2;
+  --normal: #059669;
+  --normal-bg: #ecfdf5;
+
+  --bg: #f0fdfa;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ==================== 侧边栏渐变背景 ==================== */
+.sidebar-gradient {
+  background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 60%, #0891b2 100%);
+}
+
+/* ==================== 脉冲动画 ==================== */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ==================== 滑入动画 ==================== */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideDown {
+  animation: slideDown .25s ease;
+}
+
+/* ==================== Spinner ==================== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(255,255,255,.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* ==================== 进度条动画 ==================== */
+.progress-bar-fill {
+  transition: width .35s ease;
+}
+
+/* ==================== 概率条渐变 ==================== */
+.prob-benign { background: linear-gradient(90deg, #06b6d4, var(--benign)); }
+.prob-malignant { background: linear-gradient(90deg, #ef4444, var(--malignant)); }
+.prob-normal { background: linear-gradient(90deg, #10b981, var(--normal)); }
+
+/* ==================== Scrollbar ==================== */
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ==================== 抽屉过渡 ==================== */
+.drawer-enter { transition: transform .3s cubic-bezier(.4,0,.2,1); }

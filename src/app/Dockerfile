@@ -1,34 +1,63 @@
-# 使用Python 3.11基础镜像
-FROM python:3.11-slim
+# ============================================================
+#  乳腺癌超声图像诊断系统 - Docker 镜像 (React+TS 前后端分离)
+#  构建: Node.js 构建前端 → Python 运行 API + 静态文件
+# ============================================================
 
-# 设置工作目录
+# ==================== Stage 1: 构建前端 (Node.js) ====================
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# 复制前端配置
+COPY frontend/package.json ./
+COPY frontend/tsconfig.json ./
+COPY frontend/vite.config.ts ./
+COPY frontend/tailwind.config.js ./
+COPY frontend/postcss.config.js ./
+COPY frontend/index.html ./
+
+# 先复制源码再编译
+COPY ./frontend/src ./src
+
+RUN npm install && npx tsc -b && npm run build
+
+
+# ==================== Stage 2: Python 运行时 + 静态文件服务 ====================
+FROM python:3.11-slim-bookworm
+
 WORKDIR /app
 
-# 安装系统依赖
-RUN apt-get update && apt-get install -y \
-    libgomp1 \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+# ==================== Python依赖 ====================
+COPY backend/requirements.txt .
 
-# 复制requirements.txt
-COPY requirements.txt .
+RUN pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    torch torchvision && \
+    pip install --no-cache-dir -r requirements.txt
 
-# 安装Python依赖
-RUN pip install --no-cache-dir -r requirements.txt
+# ==================== 复制后端代码 ====================
+COPY backend/app.py .
+COPY backend/config.py .
+COPY backend/model_handler.py .
+COPY backend/db.py .
+COPY backend/pdf_report.py .
 
-# 复制应用代码
-COPY . .
+# 复制模型权重
+COPY backend/models/ ./models/
 
-# 创建上传目录
-RUN mkdir -p uploads
+# 复制前端构建产物（从 builder stage）
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# 暴露端口
+# 运行时目录
+RUN mkdir -p uploads data
+
 EXPOSE 5000
 
-# 设置环境变量
-ENV FLASK_APP=app.py
-ENV PYTHONUNBUFFERED=1
+ENV FLASK_APP=app.py \
+    PYTHONUNBUFFERED=1 \
+    APP_BASE_DIR=/app
 
-# 运行应用
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/health') || exit 1"
+
 CMD ["python", "app.py"]

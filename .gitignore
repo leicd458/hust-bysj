@@ -11,8 +11,10 @@ __pycache__/
 *.so
 .Python
 *.egg-info/
-dist/
-build/
+
+# Node.js / 前端
+node_modules/
+**/frontend/dist/
 
 # Data (不提交到 Git)
 data/
