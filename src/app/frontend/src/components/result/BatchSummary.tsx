@@ -51,13 +51,13 @@ export default function BatchSummary({ results, onExport, onClear }: BatchSummar
           onClick={onExport}
           className="px-4 py-2 border border-[var(--border)] bg-white text-[var(--text-secondary)] rounded-xl text-sm font-medium cursor-pointer transition-all hover:border-primary hover:text-primary hover:bg-[var(--primary-bg)]"
         >
-          &#128196; 导出报告
+          📄 导出报告
         </button>
         <button
           onClick={onClear}
           className="px-4 py-2 border border-red-200 bg-white text-malignant rounded-xl text-sm font-medium cursor-pointer transition-all hover:bg-malignant hover:text-white"
         >
-          &#128465; 清空结果
+          🗑 清空结果
         </button>
       </div>
     </div>

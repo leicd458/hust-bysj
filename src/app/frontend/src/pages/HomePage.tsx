@@ -73,7 +73,7 @@ export default function HomePage() {
         {!upload.hasFiles && (
           <div id="uploadPlaceholder" className="flex flex-col items-center">
             <div className="w-18 h-18 mx-auto mb-4.5 bg-gradient-to-br from-[var(--primary-bg)] to-cyan-100 rounded-full flex items-center justify-center text-2xl text-primary">
-              &#128193;
+              📁
             </div>
             <p className="text-lg text-[var(--text)] font-semibold mb-1.5">点击或拖拽图像到此处</p>
             <p className="text-sm text-[var(--text-muted)]">
@@ -113,7 +113,7 @@ export default function HomePage() {
               <span className="spinner" /> <span>分析中...</span>
             </>
           ) : (
-            <span>{upload.mode === 'batch' ? '&#128202; 批量分析' : '&#128269; 开始分析'}</span>
+            <span>{upload.mode === 'batch' ? '📊 批量分析' : '🔍 开始分析'}</span>
           )}
         </button>
       </div>
@@ -171,7 +171,7 @@ export default function HomePage() {
           {/* Disclaimer */}
           <div className="bg-amber-50 border-l-3 border-amber-400 p-3.5 py-4 mt-7 rounded-r-lg">
             <p className="text-amber-800 text-sm leading-relaxed">
-              <strong>&#9888;&#65039; 免责声明：</strong>本系统仅供学术研究和辅助参考，不能替代专业医生的诊断。
+              <strong>⚠️ 免责声明：</strong>本系统仅供学术研究和辅助参考，不能替代专业医生的诊断。
               如有疑问请咨询专业医疗人员。
             </p>
           </div>

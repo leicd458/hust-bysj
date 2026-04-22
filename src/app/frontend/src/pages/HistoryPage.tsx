@@ -57,13 +57,13 @@ export default function HistoryPage() {
           onClick={() => load()}
           className="bg-white text-primary border border-[var(--border)] px-4 py-1.75 rounded-full cursor-pointer text-sm font-medium transition-all hover:bg-[var(--primary-bg)] hover:border-primary"
         >
-          &#8635; 刷新
+          ↻ 刷新
         </button>
         <button
           onClick={() => confirm('确定清空所有历史记录？此操作不可撤销！') && clearAll()}
           className="bg-malignant-bg text-malignant border border-red-200 px-4 py-1.75 rounded-full cursor-pointer text-sm font-medium transition-all hover:bg-malignant hover:text-white"
         >
-          &#128465; 清空全部
+          🗑 清空全部
         </button>
         <Link
           to="/"

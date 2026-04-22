@@ -62,7 +62,7 @@ export default function BatchResultCard({ result, index }: BatchResultCardProps)
             </>
           )}
           <span className={`text-xs transition-transform duration-250 ${expanded ? 'rotate-180' : ''}`}>
-            &#9660;
+            ▼
           </span>
         </div>
       </div>

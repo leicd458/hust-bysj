@@ -20,7 +20,7 @@ export function IconHistory() {
 
 export function IconMenu() {
   return (
-    <span className="text-xl">&#9776;</span>
+    <span className="text-xl">☰</span>
   );
 }
 
