@@ -8,7 +8,14 @@ import os
 from pathlib import Path
 
 # 项目根目录（支持环境变量覆盖，用于 Docker 部署）
-BASE_DIR = Path(os.environ.get('APP_BASE_DIR', '/app'))
+# 默认行为：
+#   - Docker 内（/app/backend/config.py）: BASE_DIR = /app
+#   - 本地开发（src/app/backend/config.py）: BASE_DIR = src/app/backend
+# 可通过 APP_BASE_DIR 环境变量覆盖
+_DEFAULT_BASE = Path(__file__).resolve().parent  # .../backend
+if Path('/app').exists() and Path('/app/app.py').exists():
+    _DEFAULT_BASE = Path('/app')
+BASE_DIR = Path(os.environ.get('APP_BASE_DIR', str(_DEFAULT_BASE)))
 
 # ==================== 模型配置 ====================
 
