@@ -1,60 +1,94 @@
 #!/usr/bin/env python3
 """
-Flask主应用
-乳腺癌超声图像诊断系统
-
-API 路由:
-- GET  /                  首页
-- POST /predict           标准预测（单图）
-- POST /predict_tta       TTA 增强预测（单图，更准）
-- POST /predict_batch     批量预测（多图）
-- GET  /health            健康检查
-- GET  /api/model_info    当前模型信息
+Flask API Server (纯后端)
+乳腺癌超声图像诊断系统 - 前后端分离架构
+- 所有接口返回 JSON
+- 静态文件由 React 构建产物提供
 """
 
-from flask import Flask, render_template, request, jsonify, send_file
+import os
+from pathlib import Path
+
+from flask import Flask, send_from_directory, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 from PIL import Image
-import os
 import time
 from io import BytesIO
 
 from config import (
     MODEL_TYPE, MODEL_PATH, MODEL_META,
-    UPLOAD_FOLDER, MAX_CONTENT_LENGTH, SECRET_KEY, ALLOWED_EXTENSIONS,
-    HOST, PORT, DEBUG, allowed_file as _allowed_file, MAX_BATCH_FILES
+    UPLOAD_FOLDER, MAX_CONTENT_LENGTH, SECRET_KEY,
+    ALLOWED_EXTENSIONS, allowed_file as _allowed_file, MAX_BATCH_FILES,
 )
 from model_handler import ModelHandler
-from db import save_diagnosis, save_batch_record, \
-    get_recent_history, get_history_stats, delete_history, clear_all_history
+from db import save_diagnosis, get_recent_history, get_history_stats, delete_history, clear_all_history
 
-# 创建 Flask 应用
-app = Flask(__name__)
+
+# ==================== 创建应用 ====================
+app = Flask(__name__, static_folder=None)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 app.config['SECRET_KEY'] = SECRET_KEY
 
-# 确保目录存在
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# 初始化模型
-print("\n" + "="*70)
+# 前端构建产物目录
+# - Docker 环境: app.py 在 /app/，前端在 /app/frontend/dist
+# - 本地开发: app.py 在 backend/，前端在 ../frontend/dist
+_FRONTEND_DIST = Path(__file__).resolve().parent
+
+# 如果当前目录名是 backend（本地开发），需要往上一级找 frontend
+if _FRONTEND_DIST.name == 'backend':
+    FRONTEND_DIST = _FRONTEND_DIST.parent / 'frontend' / 'dist'
+else:
+    FRONTEND_DIST = _FRONTEND_DIST / 'frontend' / 'dist'
+
+
+# ==================== 初始化模型 ====================
+print("\n" + "=" * 70)
 print("初始化模型...")
-print("="*70)
+print("=" * 70)
 model_handler = ModelHandler(MODEL_PATH)
 print(f"模型初始化完成: {model_handler.model_type}\n")
 
 
-@app.route('/')
-def index():
-    """主页"""
-    return render_template('index.html')
+# ==================== 静态文件服务（SPA 路由支持）====================
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path: str):
+    """提供前端静态文件，未匹配的路由返回 index.html（SPA）"""
+    # API 路由不在此处理
+    if path.startswith(('api/', 'predict', 'report', 'health')):
+        return jsonify({'error': 'Not Found'}), 404
+
+    file = FRONTEND_DIST / path
+    if file.exists() and file.is_file():
+        return send_from_directory(str(FRONTEND_DIST), path)
+
+    # SPA fallback: 返回 index.html 让前端路由处理
+    index_html = FRONTEND_DIST / 'index.html'
+    if index_html.exists():
+        return send_from_directory(str(FRONTEND_DIST), 'index.html')
+
+    return jsonify({'error': 'Frontend not built yet'}), 404
 
 
-@app.route('/history')
-def history():
-    """诊断历史记录页"""
-    return render_template('history.html')
+# ==================== API: 预测 ====================
+
+def _get_file_from_request():
+    """从请求中提取并验证文件，返回文件对象或错误响应元组"""
+    if 'file' not in request.files:
+        return jsonify({'error': '没有上传文件'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': '没有选择文件'}), 400
+
+    if not _allowed_file(file.filename):
+        return jsonify({'error': f'不支持的格式，支持: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
+
+    return file
 
 
 @app.route('/predict', methods=['POST'])
@@ -62,7 +96,7 @@ def predict():
     """标准单图预测接口"""
     file = _get_file_from_request()
     if isinstance(file, tuple):
-        return file  # 错误响应
+        return file
 
     try:
         image = Image.open(file.stream).convert('RGB')
@@ -81,7 +115,7 @@ def predict():
 
 @app.route('/predict_tta', methods=['POST'])
 def predict_tta():
-    """TTA 增强预测接口（使用7种增强取平均，准确率更高）"""
+    """TTA 增强预测接口"""
     file = _get_file_from_request()
     if isinstance(file, tuple):
         return file
@@ -93,7 +127,6 @@ def predict_tta():
         elapsed = round((time.time() - t0) * 1000, 1)
         result['inference_time_ms'] = elapsed
 
-        # 自动保存到历史
         save_diagnosis(
             result,
             filename=secure_filename(file.filename),
@@ -108,10 +141,7 @@ def predict_tta():
 
 @app.route('/predict_batch', methods=['POST'])
 def predict_batch():
-    """批量图像预测接口
-    
-    支持一次上传多张图片，返回每个文件的诊断结果和统计摘要。
-    """
+    """批量图像预测接口"""
     if 'files' not in request.files:
         return jsonify({'error': '没有上传文件'}), 400
 
@@ -119,7 +149,6 @@ def predict_batch():
     if not files or all(f.filename == '' for f in files):
         return jsonify({'error': '没有选择文件'}), 400
 
-    # 限制数量
     valid_files = [f for f in files if f.filename and _allowed_file(f.filename)]
     if len(valid_files) > MAX_BATCH_FILES:
         return jsonify({
@@ -157,6 +186,8 @@ def predict_batch():
     })
 
 
+# ==================== API: 健康检查 & 模型信息 ====================
+
 @app.route('/health')
 def health():
     """健康检查"""
@@ -176,7 +207,7 @@ def api_model_info():
     return jsonify(info)
 
 
-# ==================== 历史记录 API ====================
+# ==================== API: 历史记录 ====================
 
 @app.route('/api/history')
 def api_history():
@@ -195,7 +226,7 @@ def api_history_stats():
 
 
 @app.route('/api/history/<int:record_id>', methods=['DELETE'])
-def api_delete_history(record_id):
+def api_delete_history(record_id: int):
     """删除单条历史记录"""
     ok = delete_history(record_id)
     if ok:
@@ -210,17 +241,11 @@ def api_clear_history():
     return jsonify({'success': True, 'deleted': count})
 
 
+# ==================== API: PDF 报告 ====================
+
 @app.route('/report/pdf', methods=['POST'])
 def report_pdf():
-    """生成 PDF 诊断报告
-
-    请求体 JSON:
-    {
-        "result": { ... 预测结果 ... },
-        "image_base64": "...",
-        "gradcam_base64": "..."
-    }
-    """
+    """生成 PDF 诊断报告"""
     try:
         from pdf_report import generate_pdf_report, check_dependencies
         ok, msg = check_dependencies()
@@ -230,7 +255,6 @@ def report_pdf():
         data = request.get_json() or {}
         result = data.get('result', {})
 
-        # 如果没有传 result，用最近一条记录
         if not result:
             recent = get_recent_history(limit=1)
             if recent:
@@ -257,28 +281,17 @@ def report_pdf():
         return jsonify({'error': f'PDF 生成失败: {str(e)}'}), 500
 
 
-# ==================== 工具函数 ====================
-
-def _get_file_from_request():
-    """从请求中提取并验证文件，返回文件对象或错误响应元组"""
-    if 'file' not in request.files:
-        return jsonify({'error': '没有上传文件'}), 400
-
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': '没有选择文件'}), 400
-
-    if not _allowed_file(file.filename):
-        return jsonify({'error': f'不支持的格式，支持: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
-
-    return file
-
+# ==================== 启动 ====================
 
 if __name__ == '__main__':
-    print("\n" + "="*70)
-    print("启动乳腺癌超声图像诊断系统")
-    print("="*70)
-    print(f"访问地址: http://{HOST}:{PORT}")
-    print("="*70 + "\n")
+    print("\n" + "=" * 70)
+    print("启动乳腺癌超声图像诊断系统 (API + SPA)")
+    print("=" * 70)
+    print(f"访问地址: http://{os.environ.get('HOST', '0.0.0.0')}:{os.environ.get('PORT', 5000)}")
+    print("=" * 70 + "\n")
 
-    app.run(host=HOST, port=PORT, debug=DEBUG)
+    app.run(
+        host=os.environ.get('HOST', '0.0.0.0'),
+        port=os.environ.get('PORT', 5000),
+        debug=True,
+    )

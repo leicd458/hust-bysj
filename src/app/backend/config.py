@@ -41,13 +41,13 @@ MODEL_META = {
 }
 
 # ==================== 上传配置 ====================
-UPLOAD_FOLDER = str(BASE_DIR / 'src/app/uploads')
+UPLOAD_FOLDER = str(BASE_DIR / 'uploads')
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp'}
 MAX_BATCH_FILES = 10  # 批量上传最大文件数
 
 # ==================== 数据库配置 ====================
-DB_PATH = str(BASE_DIR / 'src/app/data/history.db')
+DB_PATH = str(BASE_DIR / 'data/history.db')
 
 # ==================== Flask配置 ====================
 SECRET_KEY = os.environ.get('SECRET_KEY') or 'breast-cancer-diagnosis-secret-key-2024'
